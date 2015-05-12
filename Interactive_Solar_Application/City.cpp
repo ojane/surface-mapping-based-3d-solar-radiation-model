@@ -9,7 +9,7 @@
 #include "osg\ref_ptr"
 #include "osg\MatrixTransform"
 #include "osgUtil\GLObjectsVisitor"
-#include "..\..\..\VGE\OpenSceneGraph-3.2.0\include\osgViewer\Renderer"
+#include "osgViewer\Renderer"
 //int SCREEN_WITH = 1280;
 //int SCREEN_HEIGHT = 768;
 City::City(osgViewer::Viewer* viewer)
@@ -1676,8 +1676,9 @@ void City::updateGlobalParams()
 	m_pSolarParam.bsky = params->Coefbh;
 	m_pSolarParam.dsky = params->Coefdh;
 	m_pSolarParam.linke = params->Linke;
-	//m_pSolarParam.day = params->Day;
-
+	m_pSolarParam.elev = params->Elevation;
+	m_pSolarParam.lon = params->Lon;
+	m_pSolarParam.lat = params->Lat;
 	//static bool show = true;
 	//show = !show;
 	//if(show)
