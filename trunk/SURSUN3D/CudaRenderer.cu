@@ -264,6 +264,19 @@ void updateGeometry(float3* vertices,unsigned int numofvertices,TriangleMesh* ge
 void setLights(float3* lights,unsigned int numoflights)
 {
      
+	if(g_pViewMatrices)
+       cudaFree(g_pViewMatrices);
+	g_pViewMatrices = NULL;
+
+	if(g_pLights)
+       cudaFree(g_pLights);
+	g_pLights = NULL;
+
+	if(g_pFrustrums)
+       cudaFree(g_pFrustrums);
+	g_pFrustrums = NULL;
+
+
 	 size_t sizeInBytes;
 	 cudaError_t error;
 	 m_numoflights = numoflights;
@@ -276,11 +289,7 @@ void setLights(float3* lights,unsigned int numoflights)
      cudaMemcpy(g_pLights,lights,sizeInBytes,cudaMemcpyHostToDevice);
 	 //g_pLights = lights;//(float3*)malloc(numoflights * sizeof(float3));
 	 //memcpy(g_pLights,lights,numoflights * sizeof(float3));
-    g_pLights_host = lights;
-
-
-     //sizeInBytes = numoflights * m_numofnodes * sizeof(bool);
-     //error  = cudaMalloc((void**)&g_pNodeCullInfo, sizeInBytes);
+     g_pLights_host = lights;
 
 
 	 sizeInBytes = sizeof(Box) * m_numoflights;
@@ -483,7 +492,6 @@ void destroyGeometry()
 	if(g_pViewMatrices)
        cudaFree(g_pViewMatrices);
 	g_pViewMatrices = NULL;
- /*   cudaFree(g_pNodeCullInfo);*/
 	if(g_pFrustrums)
        cudaFree(g_pFrustrums);
 	g_pFrustrums = NULL;
@@ -505,5 +513,9 @@ void destroyGeometry()
 	if(g_pValidNodeMasks_Host)
        free(g_pValidNodeMasks_Host); 
 	g_pValidNodeMasks_Host = NULL;
-	//free(g_pLights);
+
+	if(g_pLights)
+       cudaFree(g_pLights);
+	g_pLights = NULL;
+
 }

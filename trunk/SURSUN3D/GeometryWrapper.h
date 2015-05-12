@@ -12,32 +12,36 @@ class GeometryWrapper
 
 public:
 	//save GeometryWrapper to a binary file
-	void save(const char* filename);
+	virtual void save(const char* filename);
 	//read from a pre-saved GeometryWrapper
-	void open(const char* filename);
+	virtual void open(const char* filename);
 	//construct GeometryWrapper from a osg::Node, which can be imported from a wide range of 3d model formats, 
 	//including .osg, .osgb, .ive,.x, .3ds, .obj, although many of the non-native formats are not always fully supported
-	void loadFromOSGNode(osg::Node* node);
-	void setBakeSlot(unsigned int slot);
-	void setDiffusSlot(unsigned int slot);
-	float calMeshArea(unsigned int num);
-	osg::BoundingBox Extent() const { return g_mExtent; }
-	void Extent(osg::BoundingBox val) { g_mExtent = val; }
-protected:
+	virtual void loadFromOSGNode(osg::Node* node);
+	virtual void loadFromOSGNode(osg::Node* node,osg::Vec3d translate);
+	virtual void setBakeSlot(unsigned int slot);
+	virtual void setDiffusSlot(unsigned int slot);
+	virtual float calMeshArea(unsigned int num);
+	virtual osg::BoundingBox Extent() const { return g_mExtent; }
+	virtual void Extent(osg::BoundingBox val) { g_mExtent = val; }
 	TriangleMesh* TriangleMeshes;
 	unsigned int NumberOfMeshes;
 	unsigned int NumberOfFaces;
-	osg::BoundingBox g_mExtent;
-	int BakeSlot;
-	int DiffuseSlot;
+	std::vector<TexturedDrawable> TexturedDrawables;
 	osg::ref_ptr<osg::Vec3Array> GeometryVertices;
 	osg::ref_ptr<osg::Vec3Array> GeometryNormals;
 	osg::ref_ptr<osg::Vec2Array> DiffuseUVs;
 	osg::ref_ptr<osg::Vec2Array> BakeUVs;
-	std::vector<TexturedDrawable> TexturedDrawables;
+protected:
+
+	osg::BoundingBox g_mExtent;
+	int BakeSlot;
+	int DiffuseSlot;
+
+
 	unsigned int CurNodeOffset;
 	unsigned int CurFaceOffset;
-    //osg::Node* m_Node;
+    osg::Vec3d g_mTranslate;
 	std::map<int,TexturedDrawable> NodeList;
 	std::map<osg::Texture2D*,int> TextureList;
 protected:
@@ -47,17 +51,17 @@ protected:
 	double m_CurrentArea;
 	float m_CurWidth2Height;
 	osg::BoundingBox m_CurBB;
-	void collectStats( osg::Node* node );
-	void applyNode( osg::Node* node );
-	bool applyDrawble( osg::Geometry* drawable,osg::Matrix matWorld);
-	void build_NodeDrawableMap();	
-	void apply(osg::Node* node);
+	virtual void collectStats( osg::Node* node );
+	virtual void applyNode( osg::Node* node );
+	virtual bool applyDrawble( osg::Geometry* drawable,osg::Matrix matWorld);
+	virtual void build_NodeDrawableMap();	
+	virtual void apply(osg::Node* node);
 	//std::string m_dirName;
 	//std::string m_fileName;
 public:
 	GeometryWrapper(void);
 	~GeometryWrapper(void);
-	void destroy();
+	virtual void destroy();
 public:
 	float3* getVertices()
 	{

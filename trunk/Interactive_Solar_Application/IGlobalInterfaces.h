@@ -71,7 +71,7 @@ public:
 		FacadeIncluded = true;
 		SolarPanelIncluded = false;
 		AnalysisMode = SolarAnalysisMode::Surface_based;
-		QueryMode = SpatialQueryMode::Point;
+		QueryMode = SpatialQueryMode::Circle;
 	}
 
 
