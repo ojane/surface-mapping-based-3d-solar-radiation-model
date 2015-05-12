@@ -64,6 +64,7 @@
     <ClCompile Include="GeometryWrapper.cpp" />
     <ClCompile Include="GrassSolar.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="ExtrudeGeometryFilter2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DXUT\Optional\directx.ico">
@@ -105,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TexturedDrawable.h" />
+    <ClInclude Include="ExtrudeGeometryFilter2.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CudaRenderer.cu" />

@@ -64,8 +64,15 @@ D3DRasterizer::D3DRasterizer(void)
 
 	pDestTextureNormal = NULL;
 	pDestSurfaceNormal = NULL;
-
 	g_pRenderToSurface=NULL;
+
+	g_pVB = NULL;
+	g_pMyVertices = NULL;
+	g_pVertexDeclPadding = NULL;
+	g_pVertexDecl = NULL;
+	g_pEffect = NULL;
+
+
 }
 D3DRasterizer::D3DRasterizer(int texWidth,int texHeight)
 {
@@ -85,29 +92,36 @@ D3DRasterizer::D3DRasterizer(int texWidth,int texHeight)
 	m_TexHeight= texHeight;
 	FlipTexture = false;
 
-	 pRenderTexturePos = NULL;
-     pRenderSurfacePos = NULL;
+	g_pVB = NULL;
+	g_pMyVertices = NULL;
+	g_pVertexDeclPadding = NULL;
+	g_pVertexDecl = NULL;
+	g_pEffect = NULL;
 
 
-	  pRenderTextureNormal = NULL;
-      pRenderSurfaceNormal = NULL;
+	pRenderTexturePos = NULL;
+	pRenderSurfacePos = NULL;
 
 
-	  pRenderTexturePosPadding = NULL;
-      pRenderSurfacePosPadding = NULL;
-
-	   pRenderTextureNormalPadding = NULL;
-       pRenderSurfaceNormalPadding = NULL;
-
-	  pDestTexturePos = NULL;
-	  pDestSurfacePos = NULL;
+	pRenderTextureNormal = NULL;
+	pRenderSurfaceNormal = NULL;
 
 
+	pRenderTexturePosPadding = NULL;
+	pRenderSurfacePosPadding = NULL;
 
-	 pDestTextureNormal = NULL;
-	 pDestSurfaceNormal = NULL;
+	pRenderTextureNormalPadding = NULL;
+	pRenderSurfaceNormalPadding = NULL;
 
-	  g_pRenderToSurface=NULL;
+	pDestTexturePos = NULL;
+	pDestSurfacePos = NULL;
+
+
+
+	pDestTextureNormal = NULL;
+	pDestSurfaceNormal = NULL;
+
+	g_pRenderToSurface=NULL;
 }
 
 D3DRasterizer::~D3DRasterizer(void)
@@ -124,8 +138,104 @@ void D3DRasterizer::updateGeometryBuffer(float3* vertices,float3* normals,float2
 	m_pNormals = normals;
 	m_pUVS = uvs;
 }
+
+void D3DRasterizer::cleanupTexture()
+{
+
+	if(pRenderTexturePos != NULL){
+		pRenderTexturePos->Release(); pRenderTexturePos = NULL;
+	}
+
+	if(pRenderSurfacePos != NULL){
+		pRenderSurfacePos->Release(); pRenderSurfacePos = NULL;
+	}
+
+	if(pRenderTextureNormal != NULL){
+		pRenderTextureNormal->Release(); pRenderTextureNormal = NULL;
+	}
+
+	if(pRenderSurfaceNormal != NULL){
+		pRenderSurfaceNormal->Release(); pRenderSurfaceNormal = NULL;
+	}
+
+	if(pRenderTexturePosPadding != NULL){
+		pRenderTexturePosPadding->Release(); pRenderTexturePosPadding = NULL;
+	}
+
+	if(pRenderSurfacePosPadding != NULL){
+		pRenderSurfacePosPadding->Release(); pRenderSurfacePosPadding = NULL;
+	}
+
+	if(pRenderTextureNormalPadding != NULL){
+		pRenderTextureNormalPadding->Release(); pRenderTextureNormalPadding = NULL;
+	}
+
+	if(pRenderSurfaceNormalPadding != NULL){
+		pRenderSurfaceNormalPadding->Release(); pRenderSurfaceNormalPadding = NULL;
+	}
+
+	if(pDestTexturePos != NULL){
+		pDestTexturePos->Release(); pDestTexturePos = NULL;
+	}
+
+	if(pDestSurfacePos != NULL){
+		pDestSurfacePos->Release(); pDestSurfacePos = NULL;
+	}
+
+	if(pDestTextureNormal != NULL){
+		pDestTextureNormal->Release(); pDestTextureNormal = NULL;
+	}
+
+	if(pDestSurfaceNormal != NULL){
+		pDestSurfaceNormal->Release(); pDestSurfaceNormal = NULL;
+	}
+
+
+	if(g_pRenderToSurface != NULL){
+		g_pRenderToSurface->Release(); g_pRenderToSurface = NULL;
+	}
+}
+
 void D3DRasterizer::cleanup()
 {
+	if(g_pMyVertices)
+	{
+		delete[] g_pMyVertices;
+		g_pMyVertices = NULL;
+	}
+
+	if(g_pVB)
+	{
+		g_pVB->Release();
+		g_pVB = NULL;
+	}
+
+
+	if(g_pEffect)
+	{
+		g_pEffect->Release();
+		g_pEffect = NULL;
+	}
+
+	if(g_pEffect)
+	{
+		g_pEffect->Release();
+		g_pEffect = NULL;
+	}
+
+	if(g_pVertexDecl)
+	{
+		g_pVertexDecl->Release();
+		g_pVertexDecl = NULL;
+	}
+
+	if(g_pVertexDeclPadding)
+	{
+		g_pVertexDeclPadding->Release();
+		g_pVertexDeclPadding = NULL;
+	}
+	
+	cleanupTexture();
 
 }
 void D3DRasterizer::setTextureSize(int width,int height)
@@ -136,41 +246,42 @@ void D3DRasterizer::setTextureSize(int width,int height)
    m_TexHeight = height;
    m_TexWidth = width;
 
-   if(pRenderSurfacePos != NULL)
+   /* if(pRenderSurfacePos != NULL)
    {
-	
-	   pRenderTexturePos->Release(); pRenderTexturePos = NULL;
-	   if(pRenderSurfacePos != NULL)
-            pRenderSurfacePos->Release(); pRenderSurfacePos = NULL;
+
+   pRenderTexturePos->Release(); pRenderTexturePos = NULL;
+   if(pRenderSurfacePos != NULL)
+   pRenderSurfacePos->Release(); pRenderSurfacePos = NULL;
 
 
-	   pRenderTextureNormal->Release(); pRenderTextureNormal = NULL;
-	   if(pRenderSurfaceNormal != NULL)
-	       pRenderSurfaceNormal->Release(); pRenderSurfaceNormal = NULL;
+   pRenderTextureNormal->Release(); pRenderTextureNormal = NULL;
+   if(pRenderSurfaceNormal != NULL)
+   pRenderSurfaceNormal->Release(); pRenderSurfaceNormal = NULL;
 
 
-	   pRenderTexturePosPadding->Release(); pRenderTexturePosPadding = NULL;
-       if(pRenderSurfacePosPadding != NULL)
-	      pRenderSurfacePosPadding->Release(); pRenderSurfacePosPadding = NULL;
+   pRenderTexturePosPadding->Release(); pRenderTexturePosPadding = NULL;
+   if(pRenderSurfacePosPadding != NULL)
+   pRenderSurfacePosPadding->Release(); pRenderSurfacePosPadding = NULL;
 
-	   pRenderTextureNormalPadding->Release(); pRenderTextureNormalPadding = NULL;
-       if(pRenderSurfaceNormalPadding != NULL)
-	      pRenderSurfaceNormalPadding->Release(); pRenderSurfaceNormalPadding = NULL;
+   pRenderTextureNormalPadding->Release(); pRenderTextureNormalPadding = NULL;
+   if(pRenderSurfaceNormalPadding != NULL)
+   pRenderSurfaceNormalPadding->Release(); pRenderSurfaceNormalPadding = NULL;
 
-	   pDestTexturePos->Release(); pDestTexturePos = NULL;
-       if(pDestSurfacePos != NULL)
-	      pDestSurfacePos->Release(); pDestSurfacePos = NULL;
+   pDestTexturePos->Release(); pDestTexturePos = NULL;
+   if(pDestSurfacePos != NULL)
+   pDestSurfacePos->Release(); pDestSurfacePos = NULL;
 
 
 
-	   pDestTextureNormal->Release(); pDestTextureNormal = NULL;
-	   if(pDestSurfaceNormal != NULL)
-		   pDestSurfaceNormal->Release(); pDestSurfaceNormal = NULL;
+   pDestTextureNormal->Release(); pDestTextureNormal = NULL;
+   if(pDestSurfaceNormal != NULL)
+   pDestSurfaceNormal->Release(); pDestSurfaceNormal = NULL;
 
-      g_pRenderToSurface->Release();g_pRenderToSurface=NULL;
+   g_pRenderToSurface->Release();g_pRenderToSurface=NULL;
 
-   }
+   }*/
 
+   cleanupTexture();
 
    D3DFORMAT fmt = D3DFMT_A32B32G32R32F;
    //D3DFORMAT fmt = fmt;
@@ -210,6 +321,10 @@ void D3DRasterizer::createBuffer(float3* vertices,float3* normals,float2* uvs,un
 	m_pVertices = vertices;
 	m_pNormals = normals;
 	m_pUVS = uvs;
+
+	
+	cleanup();
+
     g_pMyVertices = new MY_VERTEX[numofvertices];
 	// Create the vertex buffer.
 	if( FAILED( g_pd3dDevice->CreateVertexBuffer( numofvertices * sizeof( MY_VERTEX ),

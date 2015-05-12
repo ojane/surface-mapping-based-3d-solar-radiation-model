@@ -105,6 +105,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="D3DRasterizer.cpp" />
+    <ClCompile Include="ExtrudeGeometryFilter2.cpp" />
     <ClCompile Include="GeometryWrapper.cpp" />
     <ClCompile Include="GrassSolar.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -321,6 +322,7 @@
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ExtrudeGeometryFilter2.h" />
     <ClInclude Include="TexturedDrawable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

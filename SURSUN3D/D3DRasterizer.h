@@ -67,7 +67,6 @@ private:
 	float2* m_pUVS;
 	LPDIRECT3DDEVICE9    g_pd3dDevice;
 	LPDIRECT3DVERTEXBUFFER9 g_pVB; // Buffer to hold vertices
-	LPDIRECT3DINDEXBUFFER9 g_pIB;
 	ID3DXEffect* g_pEffect;
 	int m_NumberOfPrimitives;
 	int m_NumberOfVertices;
@@ -80,6 +79,7 @@ protected:
 	virtual void cleanup();
 	void createVertices(unsigned int startFace,unsigned int faceCount);
 	void createTestVertices();
+	void cleanupTexture();
 	MY_VERTEX* g_pMyVertices;
 };
 //void RasterizeVertices(GeometryVisitor* geometryVisitor,osg::Node* scene,std::string outdir,bool flip);

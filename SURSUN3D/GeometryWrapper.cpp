@@ -13,10 +13,11 @@ GeometryWrapper::GeometryWrapper()
 	GeometryNormals = NULL;
 	DiffuseUVs = NULL;
 	BakeUVs = NULL;
+	g_mTranslate = osg::Vec3d(0,0,0);
 }
 GeometryWrapper::~GeometryWrapper(void)
 {
-	destroyGeometry();
+	destroy();
 }
 void GeometryWrapper::apply(osg::Node* node)
 {
@@ -144,6 +145,15 @@ void GeometryWrapper::applyNode( osg::Node* node )
                 tex = dynamic_cast<osg::Texture2D*>(drawable->getOrCreateStateSet()->getTextureAttribute(DiffuseSlot,osg::StateAttribute::TEXTURE));
 			}
 
+			if(!tex)
+			{
+				tex = dynamic_cast<osg::Texture2D*>(geode->getOrCreateStateSet()->getTextureAttribute(BakeSlot,osg::StateAttribute::TEXTURE));
+			}
+			if(!tex)
+			{
+				tex = dynamic_cast<osg::Texture2D*>(geode->getOrCreateStateSet()->getTextureAttribute(DiffuseSlot,osg::StateAttribute::TEXTURE));
+			}
+
 			//if(!tex || !tex->getImage() ||  !tex->getImage()->valid())
 			//{
    //             continue;
@@ -155,6 +165,8 @@ void GeometryWrapper::applyNode( osg::Node* node )
 			//{
 			//	matWorld = matlist[i] * matWorld;
 			//}
+			//printf("%d\n",CurNodeOffset);
+
 			matWorld = matlist[0];
 			unsigned int curFaceOffset = CurFaceOffset;
 			applyDrawble(drawableGeo,matWorld);
@@ -333,27 +345,58 @@ bool GeometryWrapper::applyDrawble( osg::Geometry* drawable,osg::Matrix matWorld
 	osg::Vec3Array* normals = (osg::Vec3Array *) drawable->getNormalArray();
 	osg::Vec2Array* diffuseuvs = NULL;
 	osg::Vec2Array* bakeuvs = NULL;
+	osg::Vec3Array* diffuseuvs3 = NULL;
+	osg::Vec3Array* bakeuvs3 = NULL;
+	
 	if(DiffuseSlot > -1)
 	{
 		diffuseuvs = (osg::Vec2Array *) drawable->getTexCoordArray(DiffuseSlot);
+		if(drawable->getTexCoordArray(DiffuseSlot) && drawable->getTexCoordArray(DiffuseSlot)->getType() == osg::Array::Vec3ArrayType)
+		{
+			diffuseuvs = NULL;
+			diffuseuvs3 = (osg::Vec3Array*) drawable->getTexCoordArray(DiffuseSlot);
+		}
 	}
 
 	osg::Vec2Array* uvs_bake = NULL;
 	if(BakeSlot > -1)
 	{
-	   bakeuvs = (osg::Vec2Array *) drawable->getTexCoordArray(BakeSlot);
-	   if(!bakeuvs)
+
+
+	   if(drawable->getTexCoordArray(BakeSlot) && drawable->getTexCoordArray(BakeSlot)->getType() == osg::Array::Vec2ArrayType)
 	   {
-		   bakeuvs = diffuseuvs;
+		   bakeuvs3 = NULL;
+		   bakeuvs = (osg::Vec2Array*) drawable->getTexCoordArray(BakeSlot);
+		   if(!bakeuvs)
+		   {
+			   bakeuvs = diffuseuvs;
+		   }
+	   }
+	   else if(drawable->getTexCoordArray(BakeSlot) && drawable->getTexCoordArray(BakeSlot)->getType() == osg::Array::Vec3ArrayType)
+	   {
+		   bakeuvs = NULL;
+		   bakeuvs3 = (osg::Vec3Array*) drawable->getTexCoordArray(BakeSlot);
+		   if(!bakeuvs3)
+		   {
+			   bakeuvs3 = diffuseuvs3;
+		   }
+	   }
+
+	   if(!bakeuvs && !bakeuvs3)
+	   {
+		   if(diffuseuvs)
+		   {
+			   bakeuvs = diffuseuvs;
+		   }
+		   else if(diffuseuvs3)
+		   {
+			   bakeuvs3 = diffuseuvs3;
+		   }
 	   }
 	}
-	//for(int k=0;k< vertices->size();k++) 
-	//{
-	//	(*vertices)[k] = (*vertices)[k] / 10;
-	//}
 
 	osg::BoundingBox uvbb;
-
+	uvbb.init();
 	for(int i=0;i<drawable->getNumPrimitiveSets();i++) 
 	{
 		osg::PrimitiveSet* primitiveSet = drawable->getPrimitiveSet(i);
@@ -365,23 +408,16 @@ bool GeometryWrapper::applyDrawble( osg::Geometry* drawable,osg::Matrix matWorld
 		{			
 			
 			CurFaceOffset++;
-			//unsigned int k1 = primitiveSet->index(k * 3);
-			//unsigned int k2 = primitiveSet->index(k * 3 + 1);
-			//unsigned int k3 = primitiveSet->index(k * 3 + 2);
+
 			unsigned int k1 = indices[k * 3];
 			unsigned int k2 = indices[k * 3 + 1];
 			unsigned int k3 = indices[k * 3 + 2];
 
-			//unsigned int k1;
-			//unsigned int k2;
-			//unsigned int k3;
-			//visitor.getFaceIndices(k,k1,k2,k3);
-			osg::Vec3 p1 = (*vertices)[k1] * matWorld;
-			osg::Vec3 p2 = (*vertices)[k2] * matWorld;
-			osg::Vec3 p3 = (*vertices)[k3] * matWorld; 
-			//(*vertices)[k1] = (*vertices)[k1] / 10;
-			//(*vertices)[k2] = (*vertices)[k2] / 10;
-			//(*vertices)[k3] = (*vertices)[k3] / 10;
+
+			osg::Vec3 p1 = (*vertices)[k1] * matWorld-g_mTranslate;
+			osg::Vec3 p2 = (*vertices)[k2] * matWorld-g_mTranslate;
+			osg::Vec3 p3 = (*vertices)[k3] * matWorld-g_mTranslate; 
+
 			m_CurBB.expandBy(p1);
 			m_CurBB.expandBy(p2);
 			m_CurBB.expandBy(p3);
@@ -412,6 +448,15 @@ bool GeometryWrapper::applyDrawble( osg::Geometry* drawable,osg::Matrix matWorld
 					DiffuseUVs->push_back(t2);
 					DiffuseUVs->push_back(t3);
 				}
+				else if(diffuseuvs3)
+				{
+					osg::Vec3 t1 = (*diffuseuvs3)[k1];
+					osg::Vec3 t2 = (*diffuseuvs3)[k2];
+					osg::Vec3 t3 = (*diffuseuvs3)[k3]; 
+					DiffuseUVs->push_back(osg::Vec2(t1.x(),t1.y()));
+					DiffuseUVs->push_back(osg::Vec2(t2.x(),t2.y()));;
+					DiffuseUVs->push_back(osg::Vec2(t3.x(),t3.y()));
+				}
 				else
 				{
 					//return false;
@@ -438,6 +483,18 @@ bool GeometryWrapper::applyDrawble( osg::Geometry* drawable,osg::Matrix matWorld
 					uvbb.expandBy(osg::Vec3(t2.x(),t2.y(),0));
 					uvbb.expandBy(osg::Vec3(t3.x(),t3.y(),0));
 				}
+				else if(bakeuvs3)
+				{
+					osg::Vec3 t1 = (*bakeuvs3)[k1];
+					osg::Vec3 t2 = (*bakeuvs3)[k2];
+					osg::Vec3 t3 = (*bakeuvs3)[k3]; 
+					BakeUVs->push_back(osg::Vec2(t1.x(),t1.y()));
+					BakeUVs->push_back(osg::Vec2(t2.x(),t2.y()));;
+					BakeUVs->push_back(osg::Vec2(t3.x(),t3.y()));
+					uvbb.expandBy(osg::Vec3(t1.x(),t1.y(),0));
+					uvbb.expandBy(osg::Vec3(t2.x(),t2.y(),0));
+					uvbb.expandBy(osg::Vec3(t3.x(),t3.y(),0));
+				}
 				else
 				{
 					//return false;
@@ -453,14 +510,13 @@ bool GeometryWrapper::applyDrawble( osg::Geometry* drawable,osg::Matrix matWorld
 
 	}
 
-
 	//printf("%f,%f,%f,%f\n",uvbb.xMin(),uvbb.xMax(),uvbb.yMin(),uvbb.yMax());
 	//if(BakeSlot > -1 && uvbb.xMin() < 0 || uvbb.xMax() > 1 || uvbb.yMin() < 0 || uvbb.yMax() > 1)
 	if(BakeSlot > -1 && (abs(uvbb.xMin()) > 0.00001 || abs(uvbb.xMax() -1) > 0.00001 || abs(uvbb.yMin()) > 0.00001 || abs(uvbb.yMax() -1) > 0.00001))
 	{
 
 
-	/*	osg::Vec2 minUV(uvbb.xMin(),uvbb.yMin());
+		osg::Vec2 minUV(uvbb.xMin(),uvbb.yMin());
 		osg::Vec2 maxUV(uvbb.xMax(),uvbb.yMax());
 		osg::Vec2 diffUV = (maxUV - minUV);
 		m_CurWidth2Height = diffUV.x() / diffUV.y();
@@ -479,7 +535,7 @@ bool GeometryWrapper::applyDrawble( osg::Geometry* drawable,osg::Matrix matWorld
 			}
 
 
-		}*/
+		}
 
 	}
 	g_mExtent.expandBy(m_CurBB);
@@ -534,12 +590,21 @@ std::vector<TexturedDrawable> GeometryWrapper::getDrawables()
 }
 void GeometryWrapper::loadFromOSGNode(osg::Node* node)
 {
+	g_mTranslate = osg::Vec3d(0,0,0);
 	destroy();
 	apply(node);
 }
+
+void GeometryWrapper::loadFromOSGNode( osg::Node* node,osg::Vec3d translate )
+{
+	g_mTranslate = translate;
+	destroy();
+	apply(node);
+}
+
 void GeometryWrapper::save(const char* filename)
 {
-	m_node_2_drawable_map.clear();
+	//m_node_2_drawable_map.clear();
 	osgDB::ofstream ofs(filename,std::ios_base::out |  std::ios::binary);
 	//ofs.write((char*)&NumberOfMeshes,sizeof(unsigned int));
 	//ofs.write((char*)&NumberOfFaces,sizeof(unsigned int));
@@ -609,10 +674,10 @@ void GeometryWrapper::save(const char* filename)
 		ofs.write((char*)&tdrawable.Width,sizeof(unsigned int));
 		ofs.write((char*)&tdrawable.Height,sizeof(unsigned int));
 		ofs.write((char*)&tdrawable.Area,sizeof(float));
-		for (int j=0;j<tdrawable.NodeIndices.size();j++)
-		{
-			m_node_2_drawable_map.insert(std::pair<unsigned int,unsigned int>(tdrawable.NodeIndices[j],i));
-		}
+		//for (int j=0;j<tdrawable.NodeIndices.size();j++)
+		//{
+		//	m_node_2_drawable_map.insert(std::pair<unsigned int,unsigned int>(tdrawable.NodeIndices[j],i));
+		//}
 	}
 	ofs.flush();
 	ofs.close();
@@ -695,12 +760,25 @@ void GeometryWrapper::open(const char* filename)
 
 void GeometryWrapper::destroy()
 {
+
+	DiffuseSlot = 0;
+	BakeSlot = 1;
+	GeometryVertices = NULL;
+	GeometryNormals = NULL;
+	DiffuseUVs = NULL;
+	BakeUVs = NULL;
+	//g_mTranslate = osg::Vec3d(0,0,0);
+	NodeList.clear();
+	TextureList.clear();
+	m_img_map.clear();
+	TexturedDrawables.clear();
 	if(TriangleMeshes)
 	{
 		delete[] TriangleMeshes;
 		TriangleMeshes = NULL;
 	}
 	m_node_2_drawable_map.clear();
+	destroyGeometry();
 }
 
 void GeometryWrapper::setBakeSlot( unsigned int slot )

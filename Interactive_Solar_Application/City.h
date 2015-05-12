@@ -224,11 +224,16 @@ struct GeometryData
 class City : public GeometryWrapper
 {
 public:
-	City(void);
+	City(osgViewer::Viewer* viewer);
 	~City(void);
 	void open();
 	osg::Node* toOSG(bool writeDiffuse,bool writeBake);
-	void setFileName(const std::string& filename,const std::string outputdir);
+    osg::Node* City::toOSG(osgEarth::Bounds bound);
+	void setFileName(std::string filename,const std::string outputdir);
+	void loadFromOSGNode(osg::Node* node);
+	void loadFromOSGNode(osg::Node* node,osg::Vec3d translate);
+	virtual void destroy();
+	void setCityNode(osg::Geode* cityNode);
 public:
 	std::vector<Building> Buildings;
 	osg::Node* getPanelNode(float x,float y);
@@ -278,5 +283,5 @@ private:
 	std::vector<unsigned int> m_selectedGeometryNodes;
 	std::map<unsigned int,GeometryData> m_node_2_startface_map;
 	SolarParam m_pSolarParam;
-
+	osgViewer::Viewer* g_pViewer;
 };
