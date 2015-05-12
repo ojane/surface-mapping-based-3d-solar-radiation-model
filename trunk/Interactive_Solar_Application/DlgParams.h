@@ -58,6 +58,7 @@ private:
 	QSpinBox* g_pLastDay;
 	QSpinBox* g_pYear;
 	QDoubleSpinBox* g_pLinke;
+	QDoubleSpinBox* g_pElevation;
 	QDoubleSpinBox* g_pBSKY;
     QDoubleSpinBox* g_pDSKY;
 	QDoubleSpinBox* g_pTimeStep;

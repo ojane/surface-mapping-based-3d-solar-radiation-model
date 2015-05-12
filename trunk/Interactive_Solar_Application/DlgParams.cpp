@@ -81,6 +81,13 @@ QGroupBox* DlgParams::createGrouppParameters()
 	qspinLinkie->setSingleStep(0.1);
 	layout->addRow(new QLabel(QString::fromLocal8Bit("linkein")), qspinLinkie);
 	g_pLinke = qspinLinkie;
+
+	g_pElevation = new QDoubleSpinBox();
+	g_pElevation->setRange(-1000,10000);
+	g_pElevation->setValue(0);
+	g_pElevation->setSingleStep(10);
+	layout->addRow(new QLabel(QString::fromLocal8Bit("elevation")), g_pElevation);
+
 	QDoubleSpinBox* qspinCoefbh = new QDoubleSpinBox();
 	qspinCoefbh->setRange(0,2);
 	qspinCoefbh->setValue(1);
@@ -126,6 +133,8 @@ QGroupBox* DlgParams::createGrouppParameters()
 
 	connect(qspinLinkie, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
 	connect(qspinCoefbh, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
+	connect(g_pElevation, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
+
 	connect(qspinCoefdh, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
 	connect(qspinStep, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
 	//connect(qspinDay, SIGNAL(valueChanged(int)), this, SLOT(updateParams(int)));
@@ -280,7 +289,7 @@ void DlgParams::onParamsChanged( double val )
 	params->LastDay = g_pLastDay->value();
 	params->Coefbh = g_pBSKY->value();
 	params->Coefdh = g_pDSKY->value();
-
+	params->Elevation = g_pElevation->value();
 
 }
 void DlgParams::onParamsChanged( int val )
@@ -289,6 +298,7 @@ void DlgParams::onParamsChanged( int val )
     SolarAnalysisParams* params = IGlobalInterfaces::getInstance()->getSolarAnalysisParams();
 	params->Radius=g_pRadius->value();
 	params->Linke = g_pLinke->value();
+	params->Elevation = g_pElevation->value();
     params->Step = g_pTimeStep->value();
 	params->FirstDay = g_pFirstDay->value();
 	params->LastDay = g_pLastDay->value();

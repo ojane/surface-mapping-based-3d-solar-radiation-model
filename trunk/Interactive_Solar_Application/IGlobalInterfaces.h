@@ -37,6 +37,9 @@ public:
 	osg::Vec3d IntersectionNormal;
 	osg::Vec3d WorldIntersectionPoint;
 	osg::Vec3d ModelTranslation;
+	float Lon;
+	float Lat;
+	float Elevation;
 	//r.sun,Day
 	int Year, Hour;
 	float Linke,Coefbh,Coefdh,Step;

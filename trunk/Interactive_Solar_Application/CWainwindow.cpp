@@ -559,7 +559,7 @@ CMainWindow::CMainWindow()
    IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Viewer = g_pViewer;
    IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->MainWin = this;
    IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->ModelTranslation = g_mTranslation;
-
+   IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Elevation = 0;
 
    m_gDailyRadPlot = NULL;
    m_gMonthlyRadPlot = NULL;
@@ -909,7 +909,7 @@ void CMainWindow::openFile( const QString& filename,bool read)
 
 	//osgEarth::Util::EarthManipulator* manip = (osgEarth::Util::EarthManipulator*)g_pViewer->getCameraManipulator();
 	//osg::Vec3d center = g_pMap->getProfile()->getExtent().bounds().center();
-	//osgEarth::Bounds extent = g_pMap->getProfile()->getExtent().bounds();
+	 osgEarth::Bounds extent = g_pMap->getProfile()->getExtent().bounds();
 	//double range = extent.width() > extent.height() ? extent.width() : extent.height();
 	//range = range * 2;
 	//osg::Vec3d eye = center;
@@ -917,6 +917,11 @@ void CMainWindow::openFile( const QString& filename,bool read)
 	//eye.z() += range;
 	////manip->setHomePosition(eye,center,osg::Vec3d(0,1,0));
 	//manip->setViewpoint(vp); 
+	osg::Vec3d geopos;
+	g_pMapNode->getMapSRS()->transform(extent.center(),osgEarth::Registry::instance()->getGlobalGeodeticProfile()->getSRS(),geopos);
+	SolarAnalysisParams* params = IGlobalInterfaces::getInstance()->getSolarAnalysisParams();
+	params->Lon = geopos.x();
+	params->Lat = geopos.y();
 
 	QDir texDir("./out_texture_dir");
 	removeDirectory(texDir);
