@@ -1,27 +1,43 @@
 
 
 #include "CWainwindow.h"
+#include "osgUtil\Optimizer"
+/** Helper base class for implementing Optimizer techniques.*/
+class InstanceGeometryVisitor : public osg::NodeVisitor
+{
+public:
+
+	InstanceGeometryVisitor():
+	  osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+	  {
+		  setNodeMaskOverride(0xffffffff);
+	  }
+	  void apply( osg::Geode& node )
+	  {
+		  node.getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
+		  for (int i=0;i<node.getNumDrawables();i++)
+		  {
+			  node.getDrawable(i)->getOrCreateStateSet()->setDataVariance(osg::Object::STATIC);
+		  }
+	  }
+
+};
+
+
 
 int
 main(int argc, char** argv)
 {
 
+	/*osg::Node* atlasNode = osgDB::readNodeFile("atlas.osg");
+	InstanceGeometryVisitor geoVisitor;
+	atlasNode->accept(geoVisitor);
+	osgUtil::Optimizer::TextureAtlasVisitor atlasVisitor;
+	atlasNode->accept(atlasVisitor);
+	atlasVisitor.optimize();
+	osgDB::writeNodeFile(*atlasNode,"atlas2.osgb");
+	return 0;*/
     QApplication app(argc, argv);
-
-
- //   osgViewer::Viewer viewer;
- //   viewer.setCameraManipulator( new osgEarth::Util::EarthManipulator() );
-	////viewer.getCamera()->setNearFarRatio(0.00002);
- //   viewer.getDatabasePager()->setDoPreCompile( true );
-	//viewer.addEventHandler(new osgViewer::StatsHandler());
-	//viewer.addEventHandler(new osgViewer::WindowSizeHandler());
-	//viewer.addEventHandler(new osgViewer::ThreadingHandler());
-	//viewer.addEventHandler(new osgViewer::LODScaleHandler());
-	//viewer.addEventHandler(new osgGA::StateSetManipulator(viewer.getCamera()->getOrCreateStateSet()));
-
-
-	
-
 
     CMainWindow win;
 	
