@@ -2,6 +2,8 @@
 #include "osgEarth\Registry"
 #include "FeatureFieldSelector.h"
 #include "osgDB\ReadFile"
+#include "osgUtil\Optimizer"
+#include <set>
 osg::Node* extrude(QString filename,std::string heightField, FeatureSource* features)
 {	
 
@@ -180,6 +182,42 @@ osgEarth::MapNode* createMapNode(FeatureSource* feature)
 
 	return node;
 }
+class TextureExportVisitor : public osgUtil::Optimizer::TextureAtlasVisitor
+{
+public:
+	TextureExportVisitor():
+	  osgUtil::Optimizer::TextureAtlasVisitor()
+	  {
+	  }
+	  void export(QDir dir)
+	  {
+		  if(!dir.exists())
+		  {
+			  dir.mkdir(".");
+		  }    
+		  QDir parentDir(dir.absolutePath() + "/../");
+		  Textures::iterator titr;
+		  for(titr = _textures.begin();
+			  titr != _textures.end();
+			  ++titr)
+		  {
+			  osg::Texture2D* tex = *titr;
+			  if(!tex || !tex->getImage())
+				  continue;
+			  QFileInfo fileInfo(tex->getImage()->getFileName().data());
+			  QString outfilename = dir.absolutePath() + "/" + fileInfo.baseName() + ".jpg";
+
+			  QString relativePath = parentDir.relativeFilePath(outfilename);
+			  tex->getImage()->setFileName(relativePath.toLocal8Bit().data());
+			  osgDB::writeImageFile(*tex->getImage(),outfilename.toLocal8Bit().data());
+			 
+		  }
+		  
+	  }
+protected:
+	 QDir g_mImageDir;
+
+};
 
 void CMainWindow::createMonthlyPlot(QCustomPlot* customPlot)
 {
@@ -656,15 +694,30 @@ void CMainWindow::export()
 	//QString filters("ive files (*.ive);;osg files (*.osg);;osgb files (*.osgb);;obj files (*.obj);;3ds files (*.3ds);;dae files (*.dae);;fbx files (*.fbx);;all files (*.*)");
 	//QString filters("ive files (*.ive);;osg files (*.osg);;osgb files (*.osgb);;obj files (*.obj);;3ds files (*.3ds);;dae files (*.dae);;fbx files (*.fbx);;all files (*.*)");
 	QString filters("osgb files (*.osgb);;ive files (*.ive);;osg files (*.osg);;all files (*.*)");
-	QString dir = QFileDialog::getSaveFileName(0,QString::fromLocal8Bit("Export"),"./",filters);
-	if(dir == "") return;
+	QString filename = QFileDialog::getSaveFileName(0,QString::fromLocal8Bit("Export"),"./",filters);
+	if(filename == "") 
+		return;
 
-	std::string fileName = dir.toLatin1().data();
 	//osgDB::Options* opt = osgDB::Registry::instance()->getOptions();
 	//osg::ref_ptr<osgDB::Options> opt = new osgDB::Options("WriteImageHint=IncludeData");
 	//opt->setPluginStringData("WriteImageHint=IncludeFile");
 	//osgDB::writeNodeFile(*g_pSolarNodes,fileName,opt);
-    g_pCity->exportNodes(fileName);
+
+	if(g_pSolarNodes->getNumChildren() < 1)
+		return;
+
+
+	TextureExportVisitor exportVisitor;
+	g_pSolarNodes->getChild(0)->accept(exportVisitor);
+	QFileInfo fileinfo(filename);
+	if(!fileinfo.completeSuffix().contains("osgb"))
+	{
+	   exportVisitor.export(fileinfo.absoluteDir().absolutePath() + "/images");
+	}
+
+	osgDB::writeNodeFile(*g_pSolarNodes,filename.toLocal8Bit().data());
+
+    //g_pCity->exportNodes(fileName);
 
 }
 

@@ -10,6 +10,7 @@
 #include "osg\MatrixTransform"
 #include "osgUtil\GLObjectsVisitor"
 #include "osgViewer\Renderer"
+#include "osgUtil/Optimizer"
 //int SCREEN_WITH = 1280;
 //int SCREEN_HEIGHT = 768;
 City::City(osgViewer::Viewer* viewer)
@@ -1178,6 +1179,7 @@ osg::Node* City::createSolarNodes()
 		osg::ref_ptr<osg::Geometry> geom = nodeToGeometry(nodeindex);
 		geode->addDrawable(geom.get());
 	}
+
 	geode->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 
 	showSelection(m_hiddenSelection);m_hiddenSelection.clear();
@@ -1282,7 +1284,11 @@ osg::Node* City::createSolarNodes()
 	geode->getOrCreateStateSet()->addUniform(new osg::Uniform("tex",BakeSlot));
 	geode->getOrCreateStateSet()->addUniform(new osg::Uniform("slot",BakeSlot));
 	geode->getOrCreateStateSet()->setAttribute(program.get(),osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
-
+	geode->getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
+	osgUtil::Optimizer::TextureAtlasVisitor atlasVisitor;
+	geode->accept(atlasVisitor);
+	atlasVisitor.optimize();
+	IGlobalInterfaces::getInstance()->setMessage("Creating Texture Atlas.\n");
 	return root;
 }
 osg::Geometry* City::nodeToGeometry(unsigned int num)
@@ -1308,7 +1314,7 @@ osg::Geometry* City::nodeToGeometry(unsigned int num)
 				diffuseUVs->push_back((*DiffuseUVs)[index]);*/
 		}
 	}
-
+	geom->getOrCreateStateSet()->setDataVariance(osg::Object::STATIC);
 	geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLES,0,vertices->size()));
 	geom->setVertexArray( vertices.get() );
 	geom->setNormalArray(normals.get());
@@ -1687,6 +1693,7 @@ void City::updateGlobalParams()
 	//  hideSelection(m_selectedBuildings);
 
 }
+
 
 void City::exportNodes(const std::string& filename)
 {
