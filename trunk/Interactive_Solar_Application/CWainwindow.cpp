@@ -693,10 +693,11 @@ void CMainWindow::export()
 {
 	//QString filters("ive files (*.ive);;osg files (*.osg);;osgb files (*.osgb);;obj files (*.obj);;3ds files (*.3ds);;dae files (*.dae);;fbx files (*.fbx);;all files (*.*)");
 	//QString filters("ive files (*.ive);;osg files (*.osg);;osgb files (*.osgb);;obj files (*.obj);;3ds files (*.3ds);;dae files (*.dae);;fbx files (*.fbx);;all files (*.*)");
-	QString filters("osgb files (*.osgb);;ive files (*.ive);;osg files (*.osg);;all files (*.*)");
+
+	/*QString filters("osgb files (*.osgb);;ive files (*.ive);;osg files (*.osg);;all files (*.*)");
 	QString filename = QFileDialog::getSaveFileName(0,QString::fromLocal8Bit("Export"),"./",filters);
 	if(filename == "") 
-		return;
+		return;*/
 
 	//osgDB::Options* opt = osgDB::Registry::instance()->getOptions();
 	//osg::ref_ptr<osgDB::Options> opt = new osgDB::Options("WriteImageHint=IncludeData");
@@ -706,7 +707,14 @@ void CMainWindow::export()
 	if(g_pSolarNodes->getNumChildren() < 1)
 		return;
 
-
+	QString dir = QFileDialog::getExistingDirectory(this, tr("Output Directory"),
+		".",
+		QFileDialog::ShowDirsOnly
+		| QFileDialog::DontResolveSymlinks);
+	if(dir == "")
+		return;
+	dir = dir + "/";
+	QString filename = dir + g_pCityNode->getName().data() + ".osgb";
 	TextureExportVisitor exportVisitor;
 	g_pSolarNodes->getChild(0)->accept(exportVisitor);
 	QFileInfo fileinfo(filename);
@@ -717,7 +725,7 @@ void CMainWindow::export()
 
 	osgDB::writeNodeFile(*g_pSolarNodes,filename.toLocal8Bit().data());
 
-    //g_pCity->exportNodes(fileName);
+    g_pCity->exportSolarData(dir);
 
 }
 
@@ -863,7 +871,7 @@ void CMainWindow::openShapeFile( const QString& filename )
 	g_pCity->open();
 	g_pMapNode = createMapNode(features);//create MapNode using API
 	g_pCityNode = g_pCity->toOSG(features->getFeatureProfile()->getExtent().bounds());
-
+	g_pCityNode->setName(fileInfo.baseName().toLocal8Bit().data());
 	
 	saveFile(customFile);
 
@@ -897,6 +905,7 @@ void CMainWindow::openFile( const QString& filename,bool read)
 		g_pCityNode = osgDB::readNodeFile(nodeFile.toLocal8Bit().data());// g_pCity->toOSG(g_pMap->getProfile()->getExtent().bounds());
 		if(!g_pCityNode || !g_pCityNode.valid())
 			return;
+		g_pCityNode->setName(QFileInfo(nodeFile).baseName().toLocal8Bit().data());
 		g_mTranslation = g_pMapNode->getMap()->getProfile()->getExtent().bounds().center();
 		g_mTranslation.z() = 0;
 
