@@ -11,6 +11,7 @@
 #include "osgUtil\GLObjectsVisitor"
 #include "osgViewer\Renderer"
 #include "osgUtil/Optimizer"
+#include "SolarDataIO.h"
 //int SCREEN_WITH = 1280;
 //int SCREEN_HEIGHT = 768;
 City::City(osgViewer::Viewer* viewer)
@@ -86,63 +87,84 @@ void City::open()
 		ifs.read(buf,bufsize);
 	}
 
+	//std::map<int,int> roofwallMap;
+	//for (int i=0;i<NumberOfMeshes;i++)
+	//{
+	//	TriangleMesh& node = TriangleMeshes[i];
+	//	roofwallMap[node.ID] = TriangleMeshes+i;
+	//}
+	int panelIndex = NumberOfMeshes;
+	TriangleMesh* pGeometryNode = TriangleMeshes+NumberOfMeshes;
+	for (int i=0;i<NumberOfMeshes;i++)
+	{
+		TriangleMesh& roofnode = TriangleMeshes[i];
 
-   int panelIndex = NumberOfMeshes;
-   TriangleMesh* pGeometryNode = TriangleMeshes+NumberOfMeshes;
-   for (int i=0;i<NumberOfMeshes;i++)
-   {
-	   TriangleMesh roofnode = TriangleMeshes[i];
+		if(roofnode.ZMax - roofnode.ZMin > 0.5)
+			continue;
+		int roofIndex = i;
+		int wallIndex =  -1;
+		TriangleMesh facadenode;
+		/*if(roofnode.XMin==facadenode.XMin && roofnode.YMin==facadenode.YMin && roofnode.XMax==facadenode.XMax && roofnode.YMax==facadenode.YMax)
+		{
+			wallIndex = roofIndex - 1;
+		}
+		else
+		{*/
+			for (int j=0;j<NumberOfMeshes;j++)
+			{
+				facadenode = TriangleMeshes[j];
+				if(facadenode.ZMax - facadenode.ZMin < 0.5)
+					continue;
+				if(roofnode.XMin==facadenode.XMin && roofnode.YMin==facadenode.YMin && roofnode.XMax==facadenode.XMax && roofnode.YMax==facadenode.YMax)
+				{
+					wallIndex = j;
+					break;
+				}
 
-	   if(roofnode.ZMax - roofnode.ZMin > 0.5)
-		   continue;
-	   for (int j=0;j<NumberOfMeshes;j++)
-	   {
-	       TriangleMesh facadenode = TriangleMeshes[j];
-		   if(facadenode.ZMax - facadenode.ZMin < 0.5)
-			   continue;
-		   if(roofnode.XMin==facadenode.XMin && roofnode.YMin==facadenode.YMin && roofnode.XMax==facadenode.XMax && roofnode.YMax==facadenode.YMax)
-		   {
-			   Building building;
-			   building.RoofNodeIndex=i;
-			   building.FacadeNodeIndex=j;
-			   SolarPanel panel;
-			   panel.Tilt = 45;
-			   panel.Orientation = 0;
-			   float3 center= roofnode.BBCenter;
-			   panel.Position=osg::Vec3d(center.x,center.y,center.z);
-			   panel.Width=roofnode.XMax-roofnode.XMin;
-			   panel.Height=roofnode.YMax-roofnode.YMin;
-			   std::vector<osg::Vec3d> vertices;
-			   std::vector<osg::Vec3d> normals;
-			   std::vector<osg::Vec2> uvs;
-			   TriangleMesh node;
-			   panel.create(vertices,normals,uvs,node);
-			   node.ID = panelIndex;
-			   node.FaceStart=GeometryVertices->size()/3;
-			   for (int k=0;k<vertices.size();k++)
-			   {
-				   GeometryVertices->push_back(vertices[k]);
-				   GeometryNormals->push_back(normals[k]);
-				   BakeUVs->push_back(uvs[k]);
-			   }
+			}
+		//}
+		if(wallIndex < 0)
+			continue;
 
-			   building.RoofArea = calMeshArea(building.RoofNodeIndex);
-			   building.FacadeArea = calMeshArea(building.FacadeNodeIndex);
-			   building.TotalArea = building.RoofArea + building.FacadeArea;
-			   building.ID = Buildings.size();
-			   building.PanelIndex=panelIndex++;
-			   building.Panel=panel;
-			   building.Bound=panel.BB;
-               building.Bound.zMax()=facadenode.ZMax;
-			   building.Bound.zMin()=facadenode.ZMin;
-			   Buildings.push_back(building);
-               *pGeometryNode=node;pGeometryNode++;
-			   break;
-		   }
-	   }
-   }
-   NumberOfMeshes=panelIndex;
-   NumberOfFaces=GeometryVertices->size()/3;
+		int id = wallIndex;
+		Building building;
+		building.RoofNodeIndex=roofIndex;
+		building.FacadeNodeIndex=wallIndex;
+		SolarPanel panel;
+		panel.Tilt = 45;
+		panel.Orientation = 0;
+		float3 center= roofnode.BBCenter;
+		panel.Position=osg::Vec3d(center.x,center.y,center.z);
+		panel.Width=roofnode.XMax-roofnode.XMin;
+		panel.Height=roofnode.YMax-roofnode.YMin;
+		std::vector<osg::Vec3d> vertices;
+		std::vector<osg::Vec3d> normals;
+		std::vector<osg::Vec2> uvs;
+		TriangleMesh node;
+		panel.create(vertices,normals,uvs,node);
+		node.ID = panelIndex;
+		node.FaceStart=GeometryVertices->size()/3;
+		for (int k=0;k<vertices.size();k++)
+		{
+			GeometryVertices->push_back(vertices[k]);
+			GeometryNormals->push_back(normals[k]);
+			BakeUVs->push_back(uvs[k]);
+		}
+
+		building.RoofArea = calMeshArea(building.RoofNodeIndex);
+		building.FacadeArea = calMeshArea(building.FacadeNodeIndex);
+		building.TotalArea = building.RoofArea + building.FacadeArea;
+		building.ID = wallIndex;
+		building.PanelIndex=panelIndex++;
+		building.Panel=panel;
+		building.Bound=panel.BB;
+		building.Bound.zMax()=facadenode.ZMax;
+		building.Bound.zMin()=facadenode.ZMin;
+		Buildings.push_back(building);
+		*pGeometryNode=node;pGeometryNode++;
+	}
+	NumberOfMeshes=panelIndex;
+	NumberOfFaces=GeometryVertices->size()/3;
 	unsigned int numofdrawables;
 	ifs.read((char*)&numofdrawables,sizeof(unsigned int));
 	char charBuf[255];
@@ -427,97 +449,6 @@ void City::loadFromOSGNode(osg::Node* node,osg::Vec3d translate)
 	//setGeometry((float3*)(&(*GeometryVertices)[0]),NumberOfFaces*3,TriangleMeshes,NumberOfMeshes);
 }
 
-osg::Node* City::toOSG(bool writeDiffuse,bool writeBake)
-{
-
-	//osg::Group* root  = new osg::Group;
-	osg::Geode* geode = new osg::Geode;
-	osg::ref_ptr<osg::Program> pgm = new osg::Program;
-	pgm->setName( "solarmapper" );
-	osg::ref_ptr<osg::Shader> fs = new osg::Shader(osg::Shader::FRAGMENT);
-	fs->loadShaderSourceFromFile("city.fs");
-	osg::ref_ptr<osg::Shader> vs = new osg::Shader(osg::Shader::VERTEX);
-	vs->loadShaderSourceFromFile("city.vs");
-	pgm->addShader(vs);
-	pgm->addShader(fs);
-	std::map<std::string,osg::ref_ptr<osg::Image>>::iterator iter;
-	for (int i=0;i<TexturedDrawables.size();i++)
-	{
-		osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-		TexturedDrawable tdrawable = TexturedDrawables[i];
-		osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
-		osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
-		osg::ref_ptr<osg::Vec2Array> diffuseUVs = new osg::Vec2Array;
-		osg::ref_ptr<osg::Vec2Array> bakeUVs = new osg::Vec2Array;	
-		osg::ref_ptr<osg::Vec3Array> color = new osg::Vec3Array();
-		//osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt( osg::PrimitiveSet::TRIANGLES, 0 );
-		unsigned int startvertex=0;
-		for (unsigned int j=0;j<tdrawable.NodeIndices.size();j++)
-		{
-			TriangleMesh node = this->TriangleMeshes[tdrawable.NodeIndices[j]];
-			m_node_2_startface_map.insert(std::pair<unsigned int,GeometryData>(tdrawable.NodeIndices[j],GeometryData(i,startvertex,startvertex+node.FaceCount*3)));
-			for (unsigned int k=node.FaceStart;k<node.FaceStart+node.FaceCount;k++)
-			{
-				for (int l=0;l<3;l++)
-				{
-					unsigned int index = k*3 + l;
-					vertices->push_back((*GeometryVertices)[index]);
-					normals->push_back((*GeometryNormals)[index]);
-					diffuseUVs->push_back((*DiffuseUVs)[index]);		
-					bakeUVs->push_back(osg::Vec2(1,1));
-				    color->push_back(osg::Vec3(0,0,0));
-				}
-
-
-			}
-			startvertex+=node.FaceCount*3;
-
-
-		}
-		geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLES,0,vertices->size()));
-		geom->setVertexArray(vertices.get() );
-		geom->setNormalArray(normals.get());
-		geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
-
-		std::string basename = QFileInfo(tdrawable.FileName.data()).fileName().toStdString();
-
-		std::string diffuseFile = m_dirName + "/" + basename;
-		osg::ref_ptr<osg::Texture2D> diffuseTex = new osg::Texture2D;
-		diffuseTex->setWrap(osg::Texture2D::WRAP_S,osg::Texture2D::REPEAT);
-		diffuseTex->setWrap(osg::Texture2D::WRAP_T,osg::Texture2D::REPEAT);
-		diffuseTex->setWrap(osg::Texture2D::WRAP_R,osg::Texture2D::REPEAT);
-		iter = m_img_map.find(diffuseFile);
-		if(iter != m_img_map.end())
-		{
-			diffuseTex->setImage(iter->second.get());
-		}
-		else
-		{
-			osg::ref_ptr<osg::Image> diffuseImg = osgDB::readImageFile(diffuseFile);
-			m_img_map.insert(std::pair<std::string,osg::ref_ptr<osg::Image>>(diffuseFile,diffuseImg));
-			diffuseTex->setImage(diffuseImg.get());
-		}
-		geom->setTexCoordArray( 0, diffuseUVs.get() );
-		geom->setTexCoordArray( 1, bakeUVs.get() );
-		geom->getOrCreateStateSet()->setTextureAttributeAndModes(0,diffuseTex.get());
-
-		geom->setColorArray(color.get());
-	    geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-		osg::StateSet* stateset = geom->getOrCreateStateSet();
-		stateset->setAttribute(pgm.get(),osg::StateAttribute::ON|osg::StateAttribute::OVERRIDE); 
-
-    	stateset->addUniform(new osg::Uniform("tex",0));
-	
-		geode->addDrawable(geom.get());
-	
-
-	}	
-	geode->getOrCreateStateSet()->addUniform(new osg::Uniform("bound",osg::Vec4(-2000,-2000,2000,2000)));
-	geode->getOrCreateStateSet()->addUniform(new osg::Uniform("mousePos",osg::Vec4(0,0,0,0)));
-    g_pCityNode = geode;
-	return geode;
-
-}
 void City::setMousePos(osg::Vec3d mousePos)
 {
    g_pCityNode->getOrCreateStateSet()->getUniform("mousePos")->set(osg::Vec4(mousePos.x(),mousePos.y(),mousePos.z(),IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Radius));
@@ -578,32 +509,32 @@ void getSolarMapStats(float* rads,unsigned int num,Stats stats[4],Stats global_s
 }
 
 
-void writeSolarFile(const char* filename,float* data,unsigned int width,unsigned int height,Stats* stats)
-{
-	std::ofstream ofs(filename,std::ios_base::out |  std::ios::binary);
-	ofs.write((char*)stats,sizeof(Stats) * 4);
-
-	ofs.write((char*)&width,sizeof(unsigned int));
-	ofs.write((char*)&height,sizeof(unsigned int));
-
-	ofs.write((char*)data,sizeof(float) * width * height * 4);
-	//ofs.write((char*)data,sizeof(SolarRadiation) * width * height);
-	ofs.flush();
-	ofs.close();
-}
-void readSolarFile(const char* filename, float*& data,unsigned int& width,unsigned int& height,Stats* stats)
-{
-
-	std::ifstream ifs;
-	ifs.open(filename,std::ios_base::in |  std::ios::binary);
-	ifs.read((char*)stats,sizeof(Stats)*4);
-	ifs.read((char*)&width,sizeof(unsigned int));
-	ifs.read((char*)&height,sizeof(unsigned int));
-	data = new float[width*height*4];
-	ifs.read((char*)data,sizeof(float)*width*height*4);
-	ifs.close();
-
-}
+//void writeSolarFile(const char* filename,float* data,unsigned int width,unsigned int height,Stats* stats)
+//{
+//	std::ofstream ofs(filename,std::ios_base::out |  std::ios::binary);
+//	ofs.write((char*)stats,sizeof(Stats) * 4);
+//
+//	ofs.write((char*)&width,sizeof(unsigned int));
+//	ofs.write((char*)&height,sizeof(unsigned int));
+//
+//	ofs.write((char*)data,sizeof(float) * width * height * 4);
+//	//ofs.write((char*)data,sizeof(SolarRadiation) * width * height);
+//	ofs.flush();
+//	ofs.close();
+//}
+//void readSolarFile(const char* filename, float*& data,unsigned int& width,unsigned int& height,Stats* stats)
+//{
+//
+//	std::ifstream ifs;
+//	ifs.open(filename,std::ios_base::in |  std::ios::binary);
+//	ifs.read((char*)stats,sizeof(Stats)*4);
+//	ifs.read((char*)&width,sizeof(unsigned int));
+//	ifs.read((char*)&height,sizeof(unsigned int));
+//	data = new float[width*height*4];
+//	ifs.read((char*)data,sizeof(float)*width*height*4);
+//	ifs.close();
+//
+//}
 void City::renderSolarMap(float* rads,unsigned char*& map,unsigned int channel,unsigned int width,unsigned int height,float rmin,float rmax)
 {
 
@@ -730,7 +661,7 @@ void City::symbolize()
 		//Stats* pStats = (Stats*)stats;
 		//fmin = stats[0].fmin;
 		//fmax = stats[0].fmax;
-		readSolarFile(solarfilename.data(),(float*)rads,width,height,(Stats*)stats);
+		SolarDataIO::readSolarFile(solarfilename.data(),(float*)rads,width,height,(Stats*)stats);
 
 		//renderAspectMap(mapNormals,imageData,0,width,height,0,360);
 		renderSolarMap((float*)rads,imageData,0,width,height,fmin,fmax);
@@ -852,6 +783,9 @@ void City::computeSolarRadiation()
 		std::string  bakefilename = dir + getGeometrySpecificBakeFileName(nodeindex);
 		std::string  normalfilename = dir + name + "_normal" + ".dds";
 		std::string  posfilename =  dir + name + "_pos" + ".dds";
+
+		std::string  normalfilenameSURF = dir + name + "_normal" + ".surf";
+		std::string  posfilenameSURF =  dir + name + "_pos" + ".surf";
 		std::string  shadowfilename =  dir + name + ".shadow";
 		std::string  solarfilename = dir + name + ".solar";
 
@@ -902,6 +836,17 @@ void City::computeSolarRadiation()
 
 		float4* mapVertices = loadVertexMap(pPosTexture);
 		float4* mapNormals =  loadVertexMap(pNormalTexture);
+
+		if(!QFileInfo(normalfilenameSURF.data()).exists())
+		{
+			SolarDataIO::writeFloat4Texture(normalfilenameSURF.data(),(float*)mapNormals,width,height);
+		}
+
+		if(!QFileInfo(posfilenameSURF.data()).exists())
+		{
+			SolarDataIO::writeFloat4Texture(posfilenameSURF.data(),(float*)mapVertices,width,height);
+		}
+
 		//float4* mapVertices = new float4[Width*Height];
 		//float4* mapNormals = new float4[Width*Height];
 
@@ -1011,7 +956,7 @@ void City::computeSolarRadiation()
 			}
 		}
 		getSolarMapStats((float*)radsSum,width*height,stats,global_stats);
-		writeSolarFile(solarfilename.data(),(float*)radsSum,width,height,stats);
+		SolarDataIO::writeSolarFile(solarfilename.data(),(float*)radsSum,width,height,stats);
 		printf("%d/%d\n",i,nodenum);
 		for (int j=0;j<radsSeries.size();j++)
 		{
@@ -1240,7 +1185,7 @@ osg::Node* City::createSolarNodes()
 	int month2,day2;
 	numDay2MonthDay(2001,IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->FirstDay,month1,day1);
 	numDay2MonthDay(2001,IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->LastDay,month2,day2);
-    ssDayRange << "From " << months[month1] <<" "<< day1 <<  " to " << months[month2] <<" "<< day2;
+    ssDayRange << "From " << months[month1-1] <<" "<< day1 <<  " to " << months[month2-1] <<" "<< day2;
 	osg::ref_ptr<osg::Node> text2 = createText(ssDayRange.str(),osg::Vec3(width / 2-80,height-40,-1.0f));
 	camera->addChild(text2.get());
 
@@ -1285,10 +1230,11 @@ osg::Node* City::createSolarNodes()
 	geode->getOrCreateStateSet()->addUniform(new osg::Uniform("slot",BakeSlot));
 	geode->getOrCreateStateSet()->setAttribute(program.get(),osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
 	geode->getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
+	IGlobalInterfaces::getInstance()->setMessage("Creating Texture Atlas.\n");
 	osgUtil::Optimizer::TextureAtlasVisitor atlasVisitor;
 	geode->accept(atlasVisitor);
 	atlasVisitor.optimize();
-	IGlobalInterfaces::getInstance()->setMessage("Creating Texture Atlas.\n");
+	IGlobalInterfaces::getInstance()->setMessage("Completed.\n");
 	return root;
 }
 osg::Geometry* City::nodeToGeometry(unsigned int num)
@@ -1693,129 +1639,47 @@ void City::updateGlobalParams()
 	//  hideSelection(m_selectedBuildings);
 
 }
-
-
-void City::exportNodes(const std::string& filename)
+void City::exportSolarData(QString srcDir,QString destDir,int nodeIndex)
 {
-	QString dir = QFileInfo(filename.data()).dirPath();
-	QString imageDir = dir + "/images/";
-	if(!QDir(dir).exists())
-    	QDir(dir).mkdir(".");
-	if(!QDir(imageDir).exists())
-	    QDir(dir).mkdir("./images/");
-	osg::ref_ptr<osg::Group> root = new osg::Group;
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	std::vector<unsigned int>& nodemasks = selectedBuildings2GeometryNodes(false);
-	unsigned int nodenum = nodemasks.size();
-	for (int i=0;i<nodenum;i++)
+	TriangleMesh targetNode = TriangleMeshes[nodeIndex];
+	std::stringstream ss;
+	ss << targetNode.ID;
+	QString name = ss.str().data();
+	QString  normalfilename = destDir + name + "_normal" + ".surf";
+	QString  posfilename =  destDir + name + "_pos" + ".surf";
+	QString  solarfilename = destDir + name + ".solar";
+
+	std::stringstream ss_src;
+	ss_src << nodeIndex;
+	QString name_src = ss_src.str().data();
+	QString  normalfilename_src = srcDir + name_src + "_normal" + ".surf";
+	QString  posfilename_src =  srcDir + name_src + "_pos" + ".surf";
+	QString  solarfilename_src = srcDir + name_src + ".solar";
+	if(QFileInfo(normalfilename_src).exists())
+	   QFile::copy(normalfilename_src,normalfilename); 
+	if(QFileInfo(posfilename_src).exists())
+	   QFile::copy(posfilename_src,posfilename); 
+	if(QFileInfo(solarfilename_src).exists())
+	   QFile::copy(solarfilename_src,solarfilename); 
+
+}
+
+void City::exportSolarData(QString dir)
+{
+	QString destDir = dir;
+
+	if(!QDir(destDir).exists())
+    	QDir(destDir).mkdir(".");
+	//QString solarDir = destDir + "/solar_data/";
+	//if(!QDir(solarDir).exists())
+	//	QDir(destDir).mkdir("./solar_data/");
+	QString  srcDir =  QString(m_outputdirName.data()) + QString("/");
+	for (int i=0;i<m_selectedBuildings.size();i++)
 	{
-		unsigned int nodeindex = nodemasks[i];
-		osg::ref_ptr<osg::Geometry> geom = nodeToGeometry(nodeindex);
-		osg::Texture2D* tex = dynamic_cast<osg::Texture2D*>(geom->getOrCreateStateSet()->getTextureAttribute(BakeSlot,osg::StateAttribute::TEXTURE));
-		if(tex && tex->getImage())
-		{
-			osg::Image* img=  tex->getImage();
-			QFileInfo imageFileName(img->getFileName().data());
-			QString name = imageFileName.baseName() + "." + imageFileName.completeSuffix();
-			QFile::copy(img->getFileName().data(), imageDir + name); 
-			img->setFileName(("./images/" + name).toLocal8Bit().data());
-		}
-		geode->addDrawable(geom.get());
+		Building& building = Buildings[m_selectedBuildings[i]];
+		exportSolarData(srcDir,destDir,building.RoofNodeIndex);
+    	exportSolarData(srcDir,destDir,building.FacadeNodeIndex);
 	}
-	QFileInfo colorFile(g_pClorRamp->getFileName().data());
-	QString colorFileName = colorFile.baseName() + "." + colorFile.completeSuffix();
-	QFile::copy(g_pClorRamp->getFileName().data(), imageDir + colorFileName); 
-	g_pClorRamp->setFileName(("./images/" + colorFileName).toLocal8Bit().data());
-
-	geode->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-
-	osg::GraphicsContext::WindowingSystemInterface* wsi = osg::GraphicsContext::getWindowingSystemInterface();
-	unsigned int width, height;
-	wsi->getScreenResolution(osg::GraphicsContext::ScreenIdentifier(0), width, height);
-	osg::ref_ptr<osgWidget::WindowManager> wm = new osgWidget::WindowManager(
-		IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Viewer,
-		width,
-		height,
-		0xF0000000,
-		osgWidget::WindowManager::WM_USE_RENDERBINS
-		);
-
-	wm->setPointerFocusMode(osgWidget::WindowManager::PFM_SLOPPY);
-
-	wm->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-	osg::ref_ptr<osg::Program> program = new osg::Program;
-	char vertexShaderSource[] = 
-		"void main(void)\n"
-		"{\n"
-		"   gl_TexCoord[0] = gl_MultiTexCoord0;\n"
-		"   gl_Position    = gl_ModelViewProjectionMatrix *  gl_Vertex;\n"
-		"}\n";
-	char fragmentShaderSource[] = 
-		"uniform sampler2D tex; \n"
-		"\n"
-		"void main(void) \n"
-		"{\n"
-		"       vec4 color = texture2D(tex, gl_TexCoord[0]);\n"
-		"       gl_FragColor = color;\n"
-		"}\n";
-	program->addShader(new osg::Shader(osg::Shader::FRAGMENT, fragmentShaderSource));
-	program->addShader(new osg::Shader(osg::Shader::VERTEX, vertexShaderSource));
-
-	geode->getOrCreateStateSet()->addUniform(new osg::Uniform("tex",0));
-	geode->getOrCreateStateSet()->setAttribute(program.get(),osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
-	Stats global_stats[4];
-	std::ifstream ifs;
-	ifs.open("global.stats",std::ios_base::in |  std::ios::binary);
-	if(ifs)
-	{
-		ifs.read((char*)global_stats,sizeof(Stats)*4);
-		ifs.close();
-		float scale = 1;
-		if(global_stats[0].fmax > 10000)
-			scale = 0.001;
-		float fmin = global_stats[0].fmin * scale;
-		float fmax = global_stats[0].fmax * scale;
-		std::stringstream ss;
-		int prec = log(fmin * 100);
-		ss.precision(prec);
-
-		if(scale < 1)
-		{
-			ss << "Minimum=" <<fmin <<"                                                                                                              " 
-				<< "Maximum=" << fmax<<" [kWh/m-2]" << std::endl;
-		}
-		else
-		{
-			ss << "Minimum=" <<fmin <<"                                                                                                              " 
-				<< "Maximum=" << fmax<<" [Wh/m-2]" << std::endl;
-		}
-		osg::ref_ptr<osg::Camera> camera=wm->createParentOrthoCamera();
-		osg::ref_ptr<osg::Node> canvas = createTextCanvas(width,height);
-		camera->addChild(canvas.get());
-		osg::ref_ptr<osg::Node> text1 = createText(ss.str(),osg::Vec3(10,height-40,-1.0f));
-		camera->addChild(text1.get());
-
-		std::string months[12]={"January" , "February" , "March" , "April", "May","June", "July", "August", "September", "October","November", "December"};
-		std::stringstream ssDayRange;
-		int month1,day1;
-		int month2,day2;
-		numDay2MonthDay(2001,IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->FirstDay,month1,day1);
-		numDay2MonthDay(2001,IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->LastDay,month2,day2);
-		ssDayRange << "From " << months[month1] <<" "<< day1 <<  " to " << months[month2] <<" "<< day2;
-		osg::ref_ptr<osg::Node> text2 = createText(ssDayRange.str(),osg::Vec3(width / 2-80,height-40,-1.0f));
-		camera->addChild(text2.get());
-
-		camera->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-		root->addChild(camera.get());
-	}
-	
-	root->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-	root->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-	root->addChild(geode.get());
-
-	osg::ref_ptr<osgDB::Options> opt = new osgDB::Options("WriteImageHint=IncludeData");
-	osgDB::writeNodeFile(*root,filename,opt);
 }
 
 void City::setFileName(std::string filename,const std::string outputdir )

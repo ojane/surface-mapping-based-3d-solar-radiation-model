@@ -5,6 +5,9 @@
 #include "IGlobalInterfaces.h"
 #include "GeometryWrapper.h"
 #include "osg\MatrixTransform"
+
+
+//structure for interactively deploying a solar panel
 struct SolarPanel
 {
 	float Height;
@@ -193,11 +196,12 @@ struct SolarPanel
 
 };
 
+//
 struct Building
 {
 	int ID;
-    int RoofNodeIndex;
-	int FacadeNodeIndex;
+    int RoofNodeIndex;//index of the roof part
+	int FacadeNodeIndex;//index of the facade part
 	int PanelIndex;
 	float FacadeArea;
 	float RoofArea;
@@ -205,6 +209,7 @@ struct Building
 	SolarPanel Panel;
 	osg::BoundingBox Bound;
 };
+
 struct GeometryData  
 {
 	unsigned int GeometryIndex;
@@ -227,12 +232,14 @@ public:
 	City(osgViewer::Viewer* viewer);
 	~City(void);
 	void open();
-	osg::Node* toOSG(bool writeDiffuse,bool writeBake);
-    osg::Node* City::toOSG(osgEarth::Bounds bound);
+	//convert to osg::Node for visualization
+    osg::Node* toOSG(osgEarth::Bounds bound);
+	//set the .city file name for loading
 	void setFileName(std::string filename,const std::string outputdir);
 	void loadFromOSGNode(osg::Node* node);
 	void loadFromOSGNode(osg::Node* node,osg::Vec3d translate);
-	virtual void destroy();
+	void destroy();
+	//set the .city file name for loading
 	void setCityNode(osg::Geode* cityNode);
 public:
 	std::vector<Building> Buildings;
@@ -252,7 +259,7 @@ public:
 	std::vector<SolarRadiation> getDailySolarRadiation(const std::vector<int>& days);
 	std::vector<SolarRadiation> getMonthlySolarRadiation(const std::vector<SolarRadiation>& daily,int startDay,int endDay);
 	QString getFacadeImagePath(int selIndex);
-	void exportNodes(const std::string& filename);
+	void exportSolarData(QString dir);
 protected:
 	void setGeometryVisibility(GeometryData& geodata,int ison);
 	osg::Geometry* nodeToGeometry(unsigned int num/*,bool writeDiffuse,bool writeBake*/);
@@ -267,6 +274,7 @@ protected:
 	SolarRadiation computePointSolarRadiationSingleDay(int day);
 	void highlightSelection(std::vector<unsigned int>& selection);
 	void unhighlightSelection(std::vector<unsigned int>& selection);
+    void exportSolarData(QString srcDir,QString destDir,int nodeIndex);
 private:
 	float RasterCellResolution;
 	int MinTexSize;

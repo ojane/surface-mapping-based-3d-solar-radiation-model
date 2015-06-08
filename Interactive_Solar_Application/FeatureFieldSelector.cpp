@@ -18,11 +18,11 @@ std::string attributeTypeToString( AttributeType type )
 {
 	switch (type)
 	{
-	case ATTRTYPE_BOOL: return "Boolean";
-	case ATTRTYPE_DOUBLE: return "Double";
-	case ATTRTYPE_INT: return "Integer";
-	case ATTRTYPE_STRING: return "String";
-	default:  return "Unspecified";
+	case ATTRTYPE_BOOL: return "boolean";
+	case ATTRTYPE_DOUBLE: return "double";
+	case ATTRTYPE_INT: return "integer";
+	case ATTRTYPE_STRING: return "string";
+	default:  return "unspecified";
 	}
 }
 
@@ -49,6 +49,7 @@ void FeatureFieldSelector::setFeatureSource( osgEarth::Features::FeatureSource* 
     ui.comboBox_Field->clear();
 	const FeatureSchema schema = featureSource->getSchema();
 	std::cout << "Schema:" << std::endl;
+	int selIndex = -1;
 	for (FeatureSchema::const_iterator itr = schema.begin(); itr != schema.end(); ++itr)
 	{
 		//std::string line = itr->first + "(" + attributeTypeToString(itr->second) + ")";
@@ -57,9 +58,18 @@ void FeatureFieldSelector::setFeatureSource( osgEarth::Features::FeatureSource* 
 		 if(itr->second == ATTRTYPE_DOUBLE || itr->second == ATTRTYPE_INT)
 		 {
 			 std::string line = itr->first + "(" + attributeTypeToString(itr->second) + ")";
+
+			 if(QString(itr->first.data()).toLower() == "height" && (itr->second == ATTRTYPE_DOUBLE | itr->second == ATTRTYPE_INT))
+				 selIndex = ui.comboBox_Field->count();
 			 ui.comboBox_Field->addItem(line.data());
 		 }
+		 if(selIndex >= 0)
+		 {
+			 ui.comboBox_Field->setCurrentIndex(selIndex);
+		 }
 	}
+
+
 }
 
 void FeatureFieldSelector::setFeatureFile( QString filename )
