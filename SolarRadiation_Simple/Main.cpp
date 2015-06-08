@@ -71,10 +71,12 @@ osgEarth::MapNode* createMapNode()
 	MapNode* node = new MapNode( map );
 	return node;
 }
-
+#include "Utils.h"
 int main(int argc, char** argv)
 {
-
+	int month,day;
+	numDay2MonthDay(2001,330,month,day);
+	numDay2MonthDay(2001,330,month,day);
     osgViewer::Viewer viewer;
     viewer.setCameraManipulator(new osgGA::TrackballManipulator);
 	//viewer.getCamera()->setNearFarRatio(0.00002);
