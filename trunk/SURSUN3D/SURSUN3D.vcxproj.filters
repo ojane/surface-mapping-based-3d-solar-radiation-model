@@ -60,11 +60,24 @@
     <ClCompile Include="DXUT\Optional\SDKmisc.cpp">
       <Filter>DXUT</Filter>
     </ClCompile>
-    <ClCompile Include="D3DRasterizer.cpp" />
-    <ClCompile Include="GeometryWrapper.cpp" />
-    <ClCompile Include="GrassSolar.cpp" />
-    <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="ExtrudeGeometryFilter2.cpp" />
+    <ClCompile Include="SolarDataIO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DRasterizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtrudeGeometryFilter2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GrassSolar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DXUT\Optional\directx.ico">
@@ -97,18 +110,39 @@
     <CustomBuild Include="DXUT\Optional\SDKmisc.h">
       <Filter>DXUT</Filter>
     </CustomBuild>
-    <CustomBuild Include="Utils.h" />
-    <CustomBuild Include="CudaRenderer.h" />
-    <CustomBuild Include="CudaTools.h" />
-    <CustomBuild Include="D3DRasterizer.h" />
-    <CustomBuild Include="GeometryWrapper.h" />
-    <CustomBuild Include="GrassSolar.h" />
+    <CustomBuild Include="CudaRenderer.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CudaTools.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D3DRasterizer.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeometryWrapper.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GrassSolar.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Utils.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TexturedDrawable.h" />
-    <ClInclude Include="ExtrudeGeometryFilter2.h" />
+    <ClInclude Include="SolarDataIO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtrudeGeometryFilter2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TexturedDrawable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="CudaRenderer.cu" />
+    <CudaCompile Include="CudaRenderer.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

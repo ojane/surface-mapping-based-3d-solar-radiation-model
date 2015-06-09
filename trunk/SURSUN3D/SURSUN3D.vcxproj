@@ -108,6 +108,7 @@
     <ClCompile Include="ExtrudeGeometryFilter2.cpp" />
     <ClCompile Include="GeometryWrapper.cpp" />
     <ClCompile Include="GrassSolar.cpp" />
+    <ClCompile Include="SolarDataIO.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="DXUT\Core\DXUT.cpp" />
     <ClCompile Include="DXUT\Optional\DXUTcamera.cpp" />
@@ -323,6 +324,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExtrudeGeometryFilter2.h" />
+    <ClInclude Include="SolarDataIO.h" />
     <ClInclude Include="TexturedDrawable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
