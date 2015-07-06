@@ -36,6 +36,29 @@ typedef struct
 	//float x,y,z; //position
 }SunVector;
 
+struct SolarTime
+{
+	int hour;
+	int minute;
+	int second;
+	SolarTime()
+	{
+		hour = 6;
+		minute = 0;
+		second = 0;
+	}
+	SolarTime(int h,int m,int s)
+		:hour(h),minute(m),second(s)
+	{
+	}
+	double toDecimalHour()
+	{
+		return hour + minute / 60.0 + second / 3600.0;
+	}
+
+};
+
+
 //parameters for r.sun calculation
 struct SolarParam
 {
@@ -51,10 +74,13 @@ struct SolarParam
 	int day;//range from 1 to 366
 	bool* shadowInfo;//an array of shadow masks corresponding to the number of solar vectors in a day
 	bool isShadowed;//a single shadow mask will be used if 'shadowInfo' is null
+	bool isInstantaneous;//apply instantaneous calculation mode
+	SolarTime time;//decimal time 
 	SolarParam()
 	{
 		shadowInfo = NULL;
 		isShadowed = false;
+		isInstantaneous = false;//time-integrated calculation mode as default
 		elev = 0;
 		slope = 0;
 		aspect = 0;
@@ -62,7 +88,7 @@ struct SolarParam
 		bsky = 1;
 		dsky = 1;
 		time_step = 1;
-
+		day = 1;
 	}
 
 };
