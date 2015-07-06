@@ -36,7 +36,18 @@ DlgParams::DlgParams(QWidget *parent)
 	//! [2] //! [3]
 	//mainLayout->setMenuBar(menuBar);
 	//! [3] //! [4]
-	mainLayout->addWidget(createGrouppParameters());
+	//mainLayout->addWidget(createGroupParameters());
+
+	QPushButton* btnRSUN = new QPushButton;
+    btnRSUN->setText("r.sun parameters");
+
+	btnRSUN->setGeometry(0,0,128,64);
+	btnRSUN->setMinimumSize(128,64);btnRSUN->setMaximumSize(128,64);;	
+	btnRSUN->setGeometry(0,0,128,64);
+
+
+	connect(btnRSUN, SIGNAL(released()), this, SLOT(onSetRSUNParams()));
+	mainLayout->addWidget(btnRSUN);
 	mainLayout->addWidget(createGroupAnalysisMode());
 	mainLayout->addWidget(createGroupBuildingParts());
 	mainLayout->addWidget(createGroupQueryMode());
@@ -53,8 +64,6 @@ DlgParams::DlgParams(QWidget *parent)
 	onSelectionModeChanged(true);
 	buttonClicked();
 
-
-
 }
 
 
@@ -63,90 +72,120 @@ DlgParams::~DlgParams()
   
 }
 
-
-QGroupBox* DlgParams::createGrouppParameters()
-{
-
-	//QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-
-
-	QGroupBox* formGroupBox = new QGroupBox(tr("GRASS GIS r.sun"));
-	QFormLayout *layout = new QFormLayout;
-	//formGroupBox->setStyleSheet("QLabel { background-color : rgba(255, 0, 0, 0); color : white; }");
-
-
-	QDoubleSpinBox* qspinLinkie = new QDoubleSpinBox();
-	qspinLinkie->setRange(1,10);
-	qspinLinkie->setValue(3);
-	qspinLinkie->setSingleStep(0.1);
-	layout->addRow(new QLabel(QString::fromLocal8Bit("linkein")), qspinLinkie);
-	g_pLinke = qspinLinkie;
-
-	g_pElevation = new QDoubleSpinBox();
-	g_pElevation->setRange(-1000,10000);
-	g_pElevation->setValue(0);
-	g_pElevation->setSingleStep(10);
-	layout->addRow(new QLabel(QString::fromLocal8Bit("elevation")), g_pElevation);
-
-	QDoubleSpinBox* qspinCoefbh = new QDoubleSpinBox();
-	qspinCoefbh->setRange(0,2);
-	qspinCoefbh->setValue(1);
-	qspinCoefbh->setSingleStep(0.1);
-	layout->addRow(new QLabel(QString::fromLocal8Bit("coefbh")), qspinCoefbh);
-	g_pBSKY = qspinCoefbh;
-
-	QDoubleSpinBox* qspinCoefdh = new QDoubleSpinBox();
-	qspinCoefdh->setRange(0,2);
-	qspinCoefdh->setValue(1);
-	qspinCoefdh->setSingleStep(0.1);
-	layout->addRow(new QLabel(QString::fromLocal8Bit("coefdh")), qspinCoefdh);
-	g_pDSKY = qspinCoefdh;
-
-
-	QSpinBox* qspinFirstDay = new QSpinBox();
-	qspinFirstDay->setRange(1,365);
-	qspinFirstDay->setValue(1);
-	layout->addRow(new QLabel(QString::fromLocal8Bit("start day")), qspinFirstDay);
-
-	QSpinBox* qspinLastDay = new QSpinBox();
-	qspinLastDay->setRange(1,365);
-	qspinLastDay->setValue(1);
-	layout->addRow(new QLabel(QString::fromLocal8Bit("end day")), qspinLastDay);
-
-
-	QDoubleSpinBox* qspinStep= new QDoubleSpinBox();
-	qspinStep->setRange(0,2);
-	qspinStep->setValue(1);
-	qspinStep->setSingleStep(0.1);
-	layout->addRow(new QLabel(QString::fromLocal8Bit("step")), qspinStep);
-
-
-	//QSpinBox* qspinYear = new QSpinBox();
-	//qspinYear->setRange(1990,1990);
-	//qspinYear->setValue(1990);
-	//layout->addRow(new QLabel(QString::fromLocal8Bit("year")), qspinYear);
-
-	//g_pDay = qspinDay;
-	g_pTimeStep=qspinStep;
-	g_pFirstDay = qspinFirstDay;
-	g_pLastDay =  qspinLastDay;
-
-	connect(qspinLinkie, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
-	connect(qspinCoefbh, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
-	connect(g_pElevation, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
-
-	connect(qspinCoefdh, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
-	connect(qspinStep, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
-	//connect(qspinDay, SIGNAL(valueChanged(int)), this, SLOT(updateParams(int)));
-	//connect(qspinYear, SIGNAL(valueChanged(int)), this, SLOT(updateParams(int)));
-	//connect(qcheckUseDataBase, SIGNAL(clicked()), this, SLOT(buttonClicked()));	
-	connect(qspinFirstDay, SIGNAL(valueChanged(int)), this, SLOT(onParamsChanged(int)));
-	connect(qspinLastDay, SIGNAL(valueChanged(int)), this, SLOT(onParamsChanged(int)));
-	formGroupBox->setLayout(layout);
-
-
-	return formGroupBox;
-}
+//
+//QGroupBox* DlgParams::createGroupParameters()
+//{
+//
+//	//QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+//
+//
+//	QGroupBox* formGroupBox = new QGroupBox(tr("GRASS GIS r.sun"));
+//	QFormLayout *layout = new QFormLayout;
+//	//formGroupBox->setStyleSheet("QLabel { background-color : rgba(255, 0, 0, 0); color : white; }");
+//
+//
+//	QDoubleSpinBox* qspinLinkie = new QDoubleSpinBox();
+//	qspinLinkie->setRange(1,10);
+//	qspinLinkie->setValue(3);
+//	qspinLinkie->setSingleStep(0.1);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("linkein")), qspinLinkie);
+//	g_pLinke = qspinLinkie;
+//
+//	g_pElevation = new QDoubleSpinBox();
+//	g_pElevation->setRange(-1000,10000);
+//	g_pElevation->setValue(0);
+//	g_pElevation->setSingleStep(10);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("elevation")), g_pElevation);
+//
+//	QDoubleSpinBox* qspinCoefbh = new QDoubleSpinBox();
+//	qspinCoefbh->setRange(0,2);
+//	qspinCoefbh->setValue(1);
+//	qspinCoefbh->setSingleStep(0.1);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("coefbh")), qspinCoefbh);
+//	g_pBSKY = qspinCoefbh;
+//
+//	QDoubleSpinBox* qspinCoefdh = new QDoubleSpinBox();
+//	qspinCoefdh->setRange(0,2);
+//	qspinCoefdh->setValue(1);
+//	qspinCoefdh->setSingleStep(0.1);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("coefdh")), qspinCoefdh);
+//	g_pDSKY = qspinCoefdh;
+//
+//
+//
+//	QSpinBox* qspinFirstDay = new QSpinBox();
+//	qspinFirstDay->setRange(1,365);
+//	qspinFirstDay->setValue(1);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("start day")), qspinFirstDay);
+//
+//	QSpinBox* qspinLastDay = new QSpinBox();
+//	qspinLastDay->setRange(1,365);
+//	qspinLastDay->setValue(1);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("end day")), qspinLastDay);
+//
+//
+//	QDoubleSpinBox* qspinStep= new QDoubleSpinBox();
+//	qspinStep->setRange(0,2);
+//	qspinStep->setValue(1);
+//	qspinStep->setSingleStep(0.1);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("step")), qspinStep);
+//
+//
+//	g_pInstaneousCheck = new QCheckBox();
+//	g_pInstaneousCheck->setChecked(false);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("instaneous mode")), g_pInstaneousCheck);
+//
+//
+//	g_pHour = new QSpinBox();
+//	g_pHour->setRange(0,23);
+//	g_pHour->setValue(12);
+//	g_pHour->setSingleStep(1);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("hour")), g_pHour);
+//
+//	g_pMinute = new QSpinBox();
+//	g_pMinute->setRange(0,59);
+//	g_pMinute->setValue(1);
+//	g_pMinute->setSingleStep(0);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("minute")), g_pMinute);
+//
+//	g_pSecond= new QSpinBox();
+//	g_pSecond->setRange(0,59);
+//	g_pSecond->setValue(1);
+//	g_pSecond->setSingleStep(0);
+//	layout->addRow(new QLabel(QString::fromLocal8Bit("minute")), g_pSecond);
+//	//QSpinBox* qspinYear = new QSpinBox();
+//	//qspinYear->setRange(1990,1990);
+//	//qspinYear->setValue(1990);
+//	//layout->addRow(new QLabel(QString::fromLocal8Bit("year")), qspinYear);
+//
+//	//g_pDay = qspinDay;
+//	g_pTimeStep=qspinStep;
+//	g_pFirstDay = qspinFirstDay;
+//	g_pLastDay =  qspinLastDay;
+//
+//	connect(qspinLinkie, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
+//	connect(qspinCoefbh, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
+//	connect(g_pElevation, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
+//
+//	connect(qspinCoefdh, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
+//	connect(qspinStep, SIGNAL(valueChanged(double)), this, SLOT(onParamsChanged(double)));
+//	//connect(qspinDay, SIGNAL(valueChanged(int)), this, SLOT(updateParams(int)));
+//	//connect(qspinYear, SIGNAL(valueChanged(int)), this, SLOT(updateParams(int)));
+//	//connect(qcheckUseDataBase, SIGNAL(clicked()), this, SLOT(buttonClicked()));	
+//	connect(qspinFirstDay, SIGNAL(valueChanged(int)), this, SLOT(onParamsChanged(int)));
+//	connect(qspinLastDay, SIGNAL(valueChanged(int)), this, SLOT(onParamsChanged(int)));
+//
+//
+//	connect(g_pHour, SIGNAL(valueChanged(int)), this, SLOT(onParamsChanged(int)));
+//	connect(g_pMinute, SIGNAL(valueChanged(int)), this, SLOT(onParamsChanged(int)));
+//	connect(g_pSecond, SIGNAL(valueChanged(int)), this, SLOT(onParamsChanged(int)));
+//	connect(g_pInstaneousCheck, SIGNAL(clicked()), this, SLOT(buttonClicked()));
+//
+//	formGroupBox->setLayout(layout);
+//
+//
+//	return formGroupBox;
+//}
 
 
 QGroupBox* DlgParams::createGroupAnalysisMode()
@@ -206,7 +245,6 @@ QGroupBox* DlgParams::createGroupBuildingParts()
 
 	return formGroupBox;
 }
-
 
 QGroupBox* DlgParams::createGroupQueryMode()
 {
@@ -277,33 +315,33 @@ QGroupBox* DlgParams::createGroupControl()
 }
 
 
-
-
 void DlgParams::onParamsChanged( double val )
 {  
 	SolarAnalysisParams* params = IGlobalInterfaces::getInstance()->getSolarAnalysisParams();
 	params->Radius=g_pRadius->value();
-	params->Linke = g_pLinke->value();
-	params->Step = g_pTimeStep->value();
-	params->FirstDay = g_pFirstDay->value();
-	params->LastDay = g_pLastDay->value();
-	params->Coefbh = g_pBSKY->value();
-	params->Coefdh = g_pDSKY->value();
-	params->Elevation = g_pElevation->value();
-
+	//params->Linke = g_pLinke->value();
+	//params->Step = g_pTimeStep->value();
+	//params->FirstDay = g_pFirstDay->value();
+	//params->LastDay = g_pLastDay->value();
+	//params->Coefbh = g_pBSKY->value();
+	//params->Coefdh = g_pDSKY->value();
+	//params->Elevation = g_pElevation->value();
+	//params->IsInstantaneous = g_pInstaneousCheck->isChecked();
+	//params->Time = SolarTime(g_pHour->value(),g_pMinute->value(),g_pSecond->value());
 }
 void DlgParams::onParamsChanged( int val )
 {
     
     SolarAnalysisParams* params = IGlobalInterfaces::getInstance()->getSolarAnalysisParams();
 	params->Radius=g_pRadius->value();
-	params->Linke = g_pLinke->value();
+	/*params->Linke = g_pLinke->value();
 	params->Elevation = g_pElevation->value();
     params->Step = g_pTimeStep->value();
 	params->FirstDay = g_pFirstDay->value();
 	params->LastDay = g_pLastDay->value();
 	params->Coefbh = g_pBSKY->value();
 	params->Coefdh = g_pDSKY->value();
+	params->Time = SolarTime(g_pHour->value(),g_pMinute->value(),g_pSecond->value());*/
 
 }
 
@@ -336,6 +374,7 @@ void DlgParams::buttonClicked()
 	params->RooftopIncluded=g_pRooftopCheck->isChecked();
 	params->FacadeIncluded=g_pFacadeCheck->isChecked();
 	params->SolarPanelIncluded=g_pSolarPanelCheck->isChecked();	  
+	//params->IsInstantaneous = g_pInstaneousCheck->isChecked();
 	if(params->SolarPanelIncluded)
 	{
 		IGlobalInterfaces::getInstance()->updateSolarPanel();
@@ -363,6 +402,14 @@ void DlgParams::onExport()
 {
 	IGlobalInterfaces::getInstance()->export();
 }
+
+void DlgParams::onSetRSUNParams()
+{
+	if(g_mDlgRUN.isVisible())
+		return;
+   g_mDlgRUN.show();
+}
+
 
 
 

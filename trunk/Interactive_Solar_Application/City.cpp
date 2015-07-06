@@ -30,6 +30,7 @@ City::City(osgViewer::Viewer* viewer)
 	m_pSolarParam.day = 1;
 	m_pSolarParam.elev=0;
 	m_pSolarParam.isShadowed = 0;
+	m_pSolarParam.isInstantaneous = false;
 	g_pViewer = viewer;
 	
 }
@@ -754,7 +755,8 @@ std::vector<SolarRadiation> City::getMonthlySolarRadiation(const std::vector<Sol
 void City::computeSolarRadiation()
 {
  
-
+	if(!TriangleMeshes)
+		return;
 	SolarParam sparam = m_pSolarParam;
 	LPDIRECT3DDEVICE9 pDevice = DXUTGetD3D9Device();
 
@@ -855,16 +857,27 @@ void City::computeSolarRadiation()
 
 
 		int numdays = analysisParams->LastDay - analysisParams->FirstDay+1;
-
+		int firstDay  = analysisParams->FirstDay;
+		if(analysisParams->IsInstantaneous)
+		{
+			numdays = 1;
+			sparam.time = analysisParams->Time;
+			sparam.isInstantaneous = analysisParams->IsInstantaneous;
+			firstDay = analysisParams->Day;
+		}
 		std::vector<SolarRadiation*> radsSeries;
 		unsigned int icell = 0;
 		unsigned int cellcount = width * height;
-		for (int j=analysisParams->FirstDay;j<=analysisParams->LastDay;j++)
+
+
+		for (int j=firstDay;j< firstDay+numdays;j++)
 		{
 		
 			    IGlobalInterfaces::getInstance()->setMessage(QString("progress: %1/%2").arg(progress++).arg(nodenum*numdays)); 
 			    IGlobalInterfaces::getInstance()->setProgress(0,nodenum*numdays,progress++);
 				sparam.day = j;
+				if(analysisParams->IsInstantaneous)
+					sparam.day = analysisParams->Day;
 				std::vector<SunVector> sunvectors = getSunVectors(sparam);
 
 				std::vector<float3> lights = sunVector2LightDir(sunvectors);
@@ -929,6 +942,7 @@ void City::computeSolarRadiation()
 						sparam.slope = slope;
 						sparam.aspect = aspect;
 			    		rad = calculateSolarRadiation(sparam);
+						//rad.global =  !shadow[0*cellcount+icell];
 						rads[icell] = rad;
 				}
                 radsSeries.push_back(rads);
@@ -937,6 +951,8 @@ void City::computeSolarRadiation()
 				//printf("width=%d, height=%d\n",width,height);
 				delete[] shadow;
 				delete[] shadowInfo;
+				if(analysisParams->IsInstantaneous)
+					break;
 		}
 		Stats stats[4];
 		SolarRadiation* radsSum =  new SolarRadiation[width*height];
@@ -1161,17 +1177,28 @@ osg::Node* City::createSolarNodes()
 	ss.precision(prec);
 
 
+	if(!IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->IsInstantaneous)
+	{
+		if(scale < 1)
+		{
+			ss << "Minimum=" <<fmin <<"                                                                                                              " 
+				<< "Maximum=" << fmax<<" [kWh/m-2]" << std::endl;
+		}
+		else
+		{
+			ss << "Minimum=" <<fmin <<"                                                                                                              " 
+				<< "Maximum=" << fmax<<" [Wh/m-2]" << std::endl;
+		}
 
-	if(scale < 1)
+	}
+	else
 	{
 		ss << "Minimum=" <<fmin <<"                                                                                                              " 
-			<< "Maximum=" << fmax<<" [kWh/m-2]" << std::endl;
-    }
-    else
-    {
-		ss << "Minimum=" <<fmin <<"                                                                                                              " 
-			<< "Maximum=" << fmax<<" [Wh/m-2]" << std::endl;
-    }
+			<< "Maximum=" << fmax<<" [W/m-2]" << std::endl;
+	}
+
+
+
 	osg::ref_ptr<osg::Camera> camera=wm->createParentOrthoCamera();
 
 	osg::ref_ptr<osg::Node> canvas = createTextCanvas(width,height);
@@ -1631,6 +1658,7 @@ void City::updateGlobalParams()
 	m_pSolarParam.elev = params->Elevation;
 	m_pSolarParam.lon = params->Lon;
 	m_pSolarParam.lat = params->Lat;
+	m_pSolarParam.isInstantaneous = params->IsInstantaneous;
 	//static bool show = true;
 	//show = !show;
 	//if(show)

@@ -139,6 +139,18 @@
     <ClCompile Include="GeneratedFiles\Template\moc_FeatureFieldSelector.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
+    <ClCompile Include="DlgRUNParams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_DlgRUNParams.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_DlgRUNParams.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_DlgRUNParams.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="City.h">
@@ -184,6 +196,9 @@
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="FeatureFieldSelector.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DlgRUNParams.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
