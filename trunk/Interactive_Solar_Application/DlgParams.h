@@ -18,7 +18,7 @@
 #define DlgPathSetting_H
 #include <QtGui>
 
-
+#include "DlgRUNParams.h"
 #include "qradiobutton.h"
 #include "osg\Node"
 class DlgParams: public QDialog
@@ -35,10 +35,11 @@ private slots:
 	void onParamsChanged( double val );
 	void onSelectionModeChanged(bool checked);
 	void buttonClicked();
+	void onSetRSUNParams();
 	void onExecute();
 	void onExport();
 private:
-    QGroupBox* createGrouppParameters();
+    //QGroupBox* createGroupParameters();
 	QGroupBox* createGroupAnalysisMode();
 	QGroupBox* createGroupBuildingParts();
 	QGroupBox* createGroupQueryMode();
@@ -54,14 +55,20 @@ private:
 	QCheckBox* g_pRooftopCheck;
 	QCheckBox* g_pFacadeCheck;
 	QCheckBox* g_pSolarPanelCheck;
-	QSpinBox* g_pFirstDay;
-	QSpinBox* g_pLastDay;
-	QSpinBox* g_pYear;
-	QDoubleSpinBox* g_pLinke;
-	QDoubleSpinBox* g_pElevation;
-	QDoubleSpinBox* g_pBSKY;
-    QDoubleSpinBox* g_pDSKY;
-	QDoubleSpinBox* g_pTimeStep;
+	//QSpinBox* g_pFirstDay;
+	//QSpinBox* g_pLastDay;
+	//QSpinBox* g_pYear;
+	//QDoubleSpinBox* g_pLinke;
+	//QDoubleSpinBox* g_pElevation;
+	//QDoubleSpinBox* g_pBSKY;
+ //   QDoubleSpinBox* g_pDSKY;
+	//QDoubleSpinBox* g_pTimeStep;
+	//QCheckBox* g_pInstaneousCheck;
+	//QSpinBox* g_pDay;
+	//QSpinBox* g_pHour;
+	//QSpinBox* g_pMinute;
+	//QSpinBox* g_pSecond;
+	DlgRUNParams g_mDlgRUN;
 };
 
 #endif // QGSNEWVECTORLAYERDIALOG_H
