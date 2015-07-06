@@ -268,7 +268,7 @@ QGroupBox* DlgParams::createGroupQueryMode()
 
 	QSpinBox* qspinRadius = new QSpinBox();
 	qspinRadius->setRange(0,5000);
-	qspinRadius->setValue(300);
+	qspinRadius->setValue(100);
 	layout->addRow(new QLabel(QString::fromLocal8Bit("Radius (m)")), qspinRadius);
 
 	g_pRadius = qspinRadius;
