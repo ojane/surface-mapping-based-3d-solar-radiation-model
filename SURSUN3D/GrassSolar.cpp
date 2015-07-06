@@ -111,7 +111,9 @@ SolarRadiation calculateSolarRadiation(SolarParam solar_param)
     com_par(tmpval);
     lum = lumcline2(tmpval);
     lum = RAD * asin(lum);
-    joules2(tmpval);
+
+	double assignedTime = solar_param.time.toDecimalHour();
+    joules2(tmpval,solar_param.isInstantaneous,assignedTime);
 	global = tmpval.beam_e + tmpval.diff_e + tmpval.refl_e;
 
 	result.global = global;
@@ -252,7 +254,7 @@ double lumcline2(TempVariables& tmpval)
     return (s);
 }
 
-void joules2(TempVariables& tmpval)
+void joules2(TempVariables& tmpval,const bool& isInstaneous,const double& assignedTime)
 {
 
     double s0, dfr, dfr_rad, dfr1_rad, dfr2_rad, fr1, fr2, dfr1, dfr2;
@@ -270,7 +272,26 @@ void joules2(TempVariables& tmpval)
 
     com_par_const(tmpval);
     com_par(tmpval);
+	if(isInstaneous)
+	{
 
+		if(assignedTime < tmpval.sunrise_time || assignedTime > tmpval.sunset_time)
+		{		
+			if(COLLECT_SUN_VECTOR)
+			{
+				SunVector sunvec;
+				sunvec.azimuth = 0;
+				sunvec.alt = 0;
+				sunvec.time = tmpval.lum_time;
+				SunVectors.push_back(sunvec);
+				curTimeStep++;
+			}
+			return;
+		}
+	
+		tmpval.sunrise_time = assignedTime;
+		
+	}
 	i1 = (int)tmpval.sunrise_time;
 	fr1 = tmpval.sunrise_time - i1;
 	if (fr1 > 0.)
@@ -335,8 +356,14 @@ void joules2(TempVariables& tmpval)
 		if (!tmpval.tien && s0 > 0.) {
 		    tmpval.insol_t += dfr;
 		    ra = brad(s0,tmpval);
+			if(isInstaneous)
+			{
+				tmpval.beam_e = ra;
+			}
+
 		    tmpval.beam_e += dfr * ra;
 		    ra = 0.;
+
 		}
 		else
 		    tmpval.bh = 0.;
@@ -344,13 +371,21 @@ void joules2(TempVariables& tmpval)
 		//dra = drad(s0,tmpval);
 		dra = drad_isotropic(s0,tmpval);
 		
+
+		if(isInstaneous)
+		{
+			tmpval.diff_e = dra;
+		    tmpval.refl_e = tmpval.rr;
+			break;
+		}
+
 		tmpval.diff_e += dfr * dra;
 		dra = 0.;
-
 		//drad(s0,tmpval);
 		
 		tmpval.refl_e += dfr * tmpval.rr;
 		tmpval.rr = 0.;
+
 		//}
 	    }			/* illuminated */
 	    //printf("insol=%f,beam=%f,diff=%f,refl=%f,global=%f\n", tmpval.insol_t,tmpval.beam_e,tmpval.diff_e,tmpval.refl_e,tmpval.insol_t+tmpval.beam_e+tmpval.diff_e);

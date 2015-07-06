@@ -68,7 +68,7 @@ public:
 void com_par(TempVariables& tmpval);
 void com_par_const(TempVariables& tmpval);
 double lumcline2(TempVariables& tmpval);
-void joules2(TempVariables& tmpval);
+void joules2(TempVariables& tmpval,const bool& isInstaneous,const double& assignedTime);
 double com_sol_const(double no_of_day);
 double com_declin(double);
 double brad(double sh,TempVariables& tmpval);
