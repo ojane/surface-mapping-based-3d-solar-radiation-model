@@ -166,11 +166,11 @@ osgEarth::MapNode* createMapNode(FeatureSource* feature)
 
 	ArcGISOptions imageryStreet;
 	imageryStreet.url() = "http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer";
-	map->addImageLayer( new ImageLayer("Imagery", imageryStreet) );
+	map->addImageLayer( new ImageLayer("World_Street_Map", imageryStreet) );
 
 	ArcGISOptions imagerySatellite;
 	imagerySatellite.url() = "http://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer";
-	map->addImageLayer( new ImageLayer("Imagery", imagerySatellite) );
+	map->addImageLayer( new ImageLayer("World_Imagery", imagerySatellite) );
 
 
 	//// add a TMS elevation layer:
@@ -643,6 +643,8 @@ void CMainWindow::execute()
 	}
 	if(getSolarAnalysisParams()->AnalysisMode == Surface_based)
 	{
+		if(!g_pCity->getVertices())
+			return;
 		osg::ref_ptr<osg::Node> solarNodes = g_pCity->createSolarNodes();
 		//osgDB::writeNodeFile(*solarNodes,"solar.osg");
 		g_pSolarNodes->removeChildren(0,g_pSolarNodes->getNumChildren());
@@ -654,6 +656,8 @@ void CMainWindow::execute()
 	else
 	{
 	
+		if(getSolarAnalysisParams()->IsInstantaneous)
+			return;
 		getSolarAnalysisParams()->DailySeries = g_pCity->getDailySolarRadiation(getSolarAnalysisParams()->getDays());
 		//getSolarAnalysisParams()->MonthlySeries = g_pCity->getMonthlySolarRadiation(getSolarAnalysisParams()->DailySeries,getSolarAnalysisParams()->FirstDay,getSolarAnalysisParams()->LastDay);
 		//if(getSolarAnalysisParams()->DailySeries.size() < 10)
