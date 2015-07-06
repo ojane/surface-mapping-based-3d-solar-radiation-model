@@ -40,8 +40,10 @@ public:
 	float Lon;
 	float Lat;
 	float Elevation;
+	bool IsInstantaneous;
+	SolarTime Time;
 	//r.sun,Day
-	int Year, Hour;
+	int Year, Day;
 	float Linke,Coefbh,Coefdh,Step;
     int FirstDay,LastDay;
 
@@ -70,11 +72,13 @@ public:
 
 	SolarAnalysisParams()
 	{
+		Day = 1;
 		RooftopIncluded = true;
 		FacadeIncluded = true;
 		SolarPanelIncluded = false;
 		AnalysisMode = SolarAnalysisMode::Surface_based;
 		QueryMode = SpatialQueryMode::Circle;
+		IsInstantaneous = false;
 	}
 
 
