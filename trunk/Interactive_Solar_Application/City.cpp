@@ -1207,12 +1207,34 @@ osg::Node* City::createSolarNodes()
 	camera->addChild(text1.get());
 
 	std::string months[12]={"January" , "February" , "March" , "April", "May","June", "July", "August", "September", "October","November", "December"};
+
 	std::stringstream ssDayRange;
 	int month1,day1;
 	int month2,day2;
-	numDay2MonthDay(2001,IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->FirstDay,month1,day1);
-	numDay2MonthDay(2001,IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->LastDay,month2,day2);
-    ssDayRange << "From " << months[month1-1] <<" "<< day1 <<  " to " << months[month2-1] <<" "<< day2;
+	if(!IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->IsInstantaneous)
+	{
+		numDay2MonthDay(2001,IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->FirstDay,month1,day1);
+		numDay2MonthDay(2001,IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->LastDay,month2,day2);
+		ssDayRange << "From " << months[month1-1] <<" "<< day1 <<  " to " << months[month2-1] <<" "<< day2;
+	}
+	else
+	{
+		int h=IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Time.hour;
+		int m = IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Time.minute;
+		int s = IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Time.second;
+
+		ssDayRange << "Day:" << IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Day << " " ;
+		if(h < 10)
+			ssDayRange << "0";
+		ssDayRange << h << ";";
+		if(m < 10)
+			ssDayRange << "0";
+		ssDayRange << m << ";";
+		if(s < 10)
+			ssDayRange << "0";
+		ssDayRange << s;
+		
+	}
 	osg::ref_ptr<osg::Node> text2 = createText(ssDayRange.str(),osg::Vec3(width / 2-80,height-40,-1.0f));
 	camera->addChild(text2.get());
 
