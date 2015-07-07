@@ -1226,10 +1226,10 @@ osg::Node* City::createSolarNodes()
 		ssDayRange << "Day:" << IGlobalInterfaces::getInstance()->getSolarAnalysisParams()->Day << " " ;
 		if(h < 10)
 			ssDayRange << "0";
-		ssDayRange << h << ";";
+		ssDayRange << h << ":";
 		if(m < 10)
 			ssDayRange << "0";
-		ssDayRange << m << ";";
+		ssDayRange << m << ":";
 		if(s < 10)
 			ssDayRange << "0";
 		ssDayRange << s;
